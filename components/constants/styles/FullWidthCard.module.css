@@ -1,0 +1,14 @@
+.full_width_card{
+    position: relative;
+    background-color: white;
+    padding: 24px 40px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);
+    border-width: 1px;
+    border-color: rgba(17,24,39,0.1);
+    border-radius: 0.5rem;
+    /* margin: 1.5rem auto; */
+    /* max-width: 100%; */
+    min-height: 30%;
+    max-height: 80%;
+    min-width: 100vw;
+}

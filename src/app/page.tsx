@@ -16,7 +16,6 @@ export default function Home() {
         <Overview />
         <Showcase />
         <Faq />
-        <Footer />
     </main>
   )
 }

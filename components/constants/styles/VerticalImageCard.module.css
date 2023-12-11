@@ -1,0 +1,49 @@
+.vertical_image_card {
+    height: 60vh;
+    width: 40vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    background-color: #FF8800;
+}
+
+.vertical_image_card > img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: all 0.5s ease-in-out;
+}
+
+.vertical_image_card:hover > img {
+    transform: scale(1.1);
+}
+
+.vertical_image_card > h1 {
+    color: #fff;
+    font-size: 2rem;
+    text-align: center;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.overlay {
+    height: 100%;
+    width: 100%;
+    background-color: rgba(58, 23, 2, 0.386);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}

@@ -1,0 +1,27 @@
+.grid_container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-gap: 10px;
+    grid-auto-flow: row dense;
+    justify-items: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(to bottom, #FF8800, #7B1FA2); /* Black to grey gradient */
+    width: 100%;
+    height: 100%;
+}
+
+/* #FF8800 (Primary color)
+#FFC107 (Bright yellow)
+#E65100 (Dark orange)
+#FF5722 (Deep orange)
+#FFD54F (Amber)
+#FF6F00 (Vivid orange) */
+
+/* #FF8800 (Orange)
+#9C27B0 (Deep purple)
+#E040FB (Bright purple)
+#7B1FA2 (Dark purple)
+#D500F9 (Vivid purple)
+#AA00FF (Electric purple) */

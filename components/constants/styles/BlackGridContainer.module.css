@@ -1,0 +1,14 @@
+.black_grid_container {
+    background: linear-gradient(to bottom, black, #FF8800); /* Black to grey gradient */
+    display: grid;
+   /* grid template should be 2 x 2  */
+    grid-template-columns: repeat(2, 1fr); /* 2 columns with equal width */
+    grid-gap: 10px; /* 10px gap between each item */
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    /* align the content to the center */
+    align-items: center;
+    justify-items: center;
+    
+  }
