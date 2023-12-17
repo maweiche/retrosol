@@ -17,7 +17,7 @@ export default function Landing() {
                     <FlashingHeader>
                         <h1>Retro Sol</h1>
                     </FlashingHeader>
-                    <Countdown />
+                    {/* <Countdown /> */}
                     {/* <Card> */}
                         {/* logo image here */}
                         {/* <img src="/img/logo.svg" className="h-6" alt="Tailwind Play" /> */}

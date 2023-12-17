@@ -1,0 +1,1098 @@
+'use client'
+import React from "react";
+import dynamic from "next/dynamic";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  VStack,
+  HStack,
+  Button,
+  Text,
+  Box,
+  Flex,
+  Spacer,
+  Heading,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import {
+  program,
+  connection,
+  globalLevel1GameDataAccount,
+} from "../utils/anchor";
+import { hash, compare } from "bcryptjs";
+import * as anchor from "@project-serum/anchor";
+
+const WalletMultiButton = dynamic(
+  async () =>
+    (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
+
+
+type GameDataAccount = {
+  solved: boolean;
+  all_authorities: Array<PublicKey>;
+};
+
+type ChestVaultAccount = {
+  authority: PublicKey;
+  chest_reward: number;
+  password: String;
+  max_attempts_left: number;
+  entry_fee: number;
+  players: Array<PublicKey>;
+};
+
+const Game = () => {
+  const { publicKey, sendTransaction } = useWallet();
+  const [checkingAnswer, setCheckingAnswer] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [listOfCreators, setListOfCreators] = useState<Array<PublicKey>>([]);
+  const [selectedCreator, setSelectedCreator] = useState<PublicKey | null>(
+    null,
+  );
+  const [listOfPlayers, setListOfPlayers] = useState([]);
+  const [globalLevel1GameDataAccount, setGlobalLevel1GameDataAccount] =
+    useState<PublicKey | null>(null);
+
+  const [loadingInitialize, setLoadingInitialize] = useState(false);
+
+  const [playerPosition, setPlayerPosition] = useState("........");
+  const [message, setMessage] = useState("");
+
+  const [playerPositionOnChain, setPlayerPositionOnChain] = useState("");
+  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
+  const [secretWordOnChain, setSecretWordOnChain] = useState("");
+  const [secretWordOnChainArray, setSecretWordOnChainArray] = useState([]);
+  const [chestRewardOnChain, setChestRewardOnChain] = useState(0);
+  const [maxAttemptsOnChain, setMaxAttemptsOnChain] = useState(0);
+  const [entryFeeOnChain, setEntryFeeOnChain] = useState(0);
+  const [authorityOnChain, setAuthorityOnChain] = useState("");
+  const [playersOnChain, setPlayersOnChain] = useState([]);
+
+  const [secretWord, setSecretWord] = useState("");
+  const [ogSecretWord, setOgSecretWord] = useState("");
+  const [guessesLeft, setGuessesLeft] = useState(6);
+  const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
+  const [correctLetters, setCorrectLetters] = useState<string[]>([]);
+  const [blanks, setBlanks] = useState<string[]>([]);
+  const [activeImage, setActiveImage] = useState(0);
+
+  const [letterToGuess, setLetterToGuess] = useState("");
+  const [correctAnswer, setCorrectAnswer] = useState(false);
+  const [incorrectAnswer, setIncorrectAnswer] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [loser, setLoser] = useState(false);
+  const [winner, setWinner] = useState(false);
+
+  const [creatingNewGame, setCreatingNewGame] = useState(false);
+  const [chestReward, setChestReward] = useState("0");
+  const [entryFee, setEntryFee] = useState("0");
+  const [maxAttempts, setMaxAttempts] = useState("0");
+  const [playerIndexInGameList, setPlayerIndexInGameList] = useState(null);
+
+  const [gameDataAccount, setGameDataAccount] = useState<any | null>(null);
+
+  const [chestVaultAccount, setChestVaultAccount] = useState<PublicKey | null>(
+    null,
+  );
+
+  // game selection logic here
+  async function handleClickSelectCreator(creator: any) {
+    console.log("creator", creator);
+    setSelectedCreator(creator);
+    await handleClickGetData();
+  }
+
+  const renderCreatorSelection = () => {
+    return (
+      <Box>
+        {listOfCreators.length > 0 ? (
+          <Box>
+            <Text>Select a creator</Text>
+            <select
+              value={selectedCreator?.toString()}
+              onChange={(e) => handleClickSelectCreator(e.target.value)}
+            >
+              <option value="">Select a creator</option>
+              {listOfCreators.map((creator: PublicKey, index: number) => {
+                return (
+                  <option key={index} value={creator.toString()}>
+                    {creator.toString()}
+                  </option>
+                );
+              })}
+            </select>
+          </Box>
+        ) : (
+          <Box>
+            {creatingNewGame ? (
+              <Text>Enter your settings</Text>
+            ) : (
+              <Text>No active games, try creating one!</Text>
+            )}
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  //*************************************** */
+
+  //game creation
+  const handleClickCreateGame = async () => {
+    setCreatingNewGame(!creatingNewGame);
+  };
+
+  //*************************************** */
+
+  // hangman game logic here
+
+  async function handleClickGetData() {
+    setLoading(true);
+    const main_key = new PublicKey(
+      "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
+    );
+    let data = PublicKey.findProgramAddressSync(
+      [Buffer.from("hangmanData"), main_key.toBuffer()],
+      program.programId,
+    );
+    console.log("data", data);
+    setGlobalLevel1GameDataAccount(data[0]);
+
+    const game_account_info = await connection.getAccountInfo(data[0]);
+
+    if (game_account_info != null) {
+      const game_data_decoded = program.coder.accounts.decode(
+        "GameDataAccount",
+        game_account_info?.data,
+      );
+
+      console.log("game_data_decoded", game_data_decoded);
+
+      console.log("creator list", game_data_decoded?.allCreators);
+      setListOfCreators(
+        game_data_decoded?.allCreators.map((creator: { toString: () => any; }) => {
+          return creator.toString();
+        }),
+      );
+      setGameDataAccount(game_data_decoded);
+    }
+
+    if (selectedCreator) {
+      const creator_key = new PublicKey(selectedCreator);
+      const treasure = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("chestVault"), creator_key.toBuffer()],
+        program.programId,
+      );
+      console.log("treasure", treasure[0].toString());
+      setChestVaultAccount(treasure[0]);
+
+      const treasure_account_info = await connection.getAccountInfo(
+        treasure[0],
+      );
+
+      if (treasure_account_info != null) {
+        console.log(
+          "treasure_account_info",
+          treasure_account_info.owner.toString(),
+        );
+        const chest_vault_account = await program.coder.accounts.decode(
+          "ChestVaultAccount",
+          treasure_account_info?.data,
+        );
+        console.log("chest vault password", chest_vault_account?.password);
+        console.log("chest vault reward", chest_vault_account?.chestReward);
+        console.log(
+          "chest vault max attempts",
+          chest_vault_account?.maxAttemptsLeft,
+        );
+        console.log("chest vault entry fee", chest_vault_account?.entryFee);
+        // convert from bn to number
+        setChestRewardOnChain(chest_vault_account?.chestReward.toNumber());
+        setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
+        setEntryFeeOnChain(chest_vault_account?.entryFee.toNumber());
+        setSecretWordOnChain(chest_vault_account?.password);
+        setAuthorityOnChain(chest_vault_account?.creator.toString());
+        setPlayersOnChain(chest_vault_account?.players);
+
+        const secret_word_array = chest_vault_account?.password;
+        setSecretWordOnChainArray(secret_word_array);
+
+        const correct_letters = [];
+        // separate the secret word by (*)(*) and create an array of blanks
+        console.log("secret_word_array", secret_word_array.split("(*)(*)"));
+        for (let i = 0; i < secret_word_array?.split("(*)(*)"); i++) {
+          correct_letters.push("_");
+          const blanks: string[] = [];
+          blanks.push("_");
+        }
+        setBlanks(correct_letters);
+
+        console.log(chest_vault_account?.chestReward);
+        console.log("secret_word_array", secret_word_array);
+        console.log("players", chest_vault_account?.players);
+        const list_of_players = chest_vault_account?.players;
+        setListOfPlayers(chest_vault_account?.players);
+        // find the index of the player in the players array
+        if (list_of_players?.length > 0) {
+          // chest_vault_account?.players is an array of objects, find the index of the one that's player field matches publicKey.toString()
+          const player_index = list_of_players.findIndex((player: { player: { toString: () => string; }; }) => {
+            return player.player.toString() === publicKey?.toString();
+          });
+          console.log("player_index", player_index);
+          if (player_index > -1) {
+            setPlayerIndexInGameList(player_index);
+            if (list_of_players[player_index].incorrectGuesses < 6) {
+              console.log("player info", list_of_players[player_index]);
+              // setCorrectLetters(list_of_players[player_index].correctLetters)
+              list_of_players[player_index].correctLetters.forEach((letter: string) => {
+                if (letter != "_") {
+                  correctLetters.push(letter);
+                }
+              });
+              setGuessesLeft(
+                6 - list_of_players[player_index].incorrectGuesses,
+              );
+              // advance the active image to the number of incorrect guesses
+              // if the player has 0 incorrect guesses, the active image should be 0
+              if (list_of_players[player_index].incorrectGuesses == 0) {
+                setActiveImage(0);
+              } else {
+                setActiveImage(list_of_players[player_index].incorrectGuesses);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    setLoading(false);
+  }
+
+  async function hashWord(word: string) {
+    let hashed_word_array = [];
+    // create an array from the secret word with each letter as an index
+    let secret_word_array = word.split("");
+    for (let i = 0; i < secret_word_array.length; i++) {
+      secret_word_array[i] = secret_word_array[i].toLowerCase();
+      let hashed_word = await hash(secret_word_array[i], 10); //10 is the salt
+      hashed_word_array.push(hashed_word);
+    }
+    const new_secret_word = hashed_word_array.join("(*)(*)"); // dog => d(*)(*)o(*)(*)g
+    // const new_secret_word = hashed_word_array;
+    console.log("new_secret_word", new_secret_word);
+    return new_secret_word;
+  }
+
+  async function handleClickInitialize() {
+    console.log("entryFee", entryFee);
+    console.log("secretWord", secretWord);
+    const new_secret_word = await hashWord(secretWord);
+    console.log("new_secret_word", new_secret_word);
+    console.log("chestReward", chestReward);
+    console.log("maxAttempts", maxAttempts);
+    toast.info("Initializing game...");
+    if (publicKey) {
+      console.log("chestVaultAccount", chestVaultAccount?.toString());
+      const reward_as_bn = new anchor.BN(
+        // parse chestReward as a float and convert to lamports
+        parseFloat(chestReward) * anchor.web3.LAMPORTS_PER_SOL,
+      );
+      const entry_fee_as_bn = new anchor.BN(
+        // parse entryFee as a float and convert to lamports
+        parseFloat(entryFee) * anchor.web3.LAMPORTS_PER_SOL,
+      );
+      console.log("entry_fee_as_bn", entry_fee_as_bn.toString());
+      const max_attempts = parseInt(maxAttempts);
+
+      const transaction = await program.methods
+        .initializeLevelOne(
+          reward_as_bn,
+          new_secret_word,
+          max_attempts,
+          entry_fee_as_bn,
+        )
+        .accounts({
+          newGameDataAccount: globalLevel1GameDataAccount as any,
+          chestVaultAccount: chestVaultAccount as any,
+          signer: publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .transaction();
+
+      const txHash = await sendTransaction(transaction, connection);
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      console.log("latest blockhash", blockhash);
+      const confirmTransaction = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature: txHash,
+      });
+      setCreatingNewGame(false);
+      handleClickGetData();
+      console.log("confirmTransaction", confirmTransaction);
+      console.log(
+        "txHash",
+        `https://solana.fm/tx/${txHash}/?cluster=devnet-solana`,
+      );
+      toast.success(
+        `Success!
+            https://explorer.solana.com/tx/${txHash}?cluster=devnet
+          `,
+      );
+    } else {
+      try {
+        console.log("trying backup");
+        const response = await fetch("/api/sendTransaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction: "initializeLevelOne" }),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async function handleClickPlayerStartGame() {
+    toast.info("Starting game...");
+    if (publicKey) {
+      // const password = secretWord
+      const transaction = await program.methods
+        .playerStartsGame()
+        .accounts({
+          gameDataAccount: globalLevel1GameDataAccount as any,
+          chestVaultAccount: chestVaultAccount as any,
+          signer: publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .transaction();
+
+      const txHash = await sendTransaction(transaction, connection);
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      console.log("latest blockhash", blockhash);
+      const confirmTransaction = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature: txHash,
+      });
+
+      console.log("confirmTransaction", confirmTransaction);
+
+      handleClickGetData();
+    } else {
+      try {
+        const response = await fetch("/api/sendTransaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction: "playerStartsGame" }),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async function handleClickRight(letterToGuess: string) {
+    toast.info("Checking guess...");
+    // guessedLetters.push(letterToGuess);
+    // get the secret word from the chest vault account
+    let correct_letter = false;
+    let correct_letter_indexes = [];
+    const secret_word = secretWordOnChain;
+    const secret_word_array = secret_word.split("(*)(*)");
+    for (let i = 0; i < secret_word_array.length; i++) {
+      let lower_case_letter = letterToGuess.toLowerCase();
+      // use comparePassword to compare the letterToGuess to each letter in the secret word
+      const is_correct = await compare(
+        lower_case_letter,
+        secret_word_array[i],
+      );
+      console.log(
+        "comparing letterToGuess to secret_word_array[i]",
+        lower_case_letter,
+        secret_word_array[i],
+      );
+      console.log("is_correct", is_correct);
+      if (is_correct) {
+        correct_letter = true;
+        correct_letter_indexes.push(i);
+      }
+    }
+    console.log("correct_letter_indexes", correct_letter_indexes);
+    setCheckingAnswer(true);
+    if (publicKey && correct_letter) {
+      console.log("letterToGuess", letterToGuess);
+      console.log("gameDataAccount", globalLevel1GameDataAccount?.toString());
+      console.log("chestVaultAccount", chestVaultAccount?.toString());
+      const transaction = await program.methods
+        // .addCorrectLetter(letterToGuess, correct_letter_indexes) //err: requires (length 1) Buffer as src
+        .addCorrectLetter(letterToGuess, Buffer.from(correct_letter_indexes))
+        .accounts({
+          gameDataAccount: globalLevel1GameDataAccount as any,
+          chestVaultAccount: chestVaultAccount as any,
+          player: publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .transaction();
+
+      const txHash = await sendTransaction(transaction, connection);
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      const confirmTransaction = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature: txHash,
+      });
+
+      console.log("confirmTransaction", confirmTransaction);
+      setCheckingAnswer(false);
+      setLetterToGuess("");
+    } else if (publicKey && !correct_letter) {
+      try {
+        const transaction = await program.methods
+          // .addCorrectLetter(letterToGuess, correct_letter_indexes) //err: requires (length 1) Buffer as src
+          .addIncorrectLetter(letterToGuess)
+          .accounts({
+            gameDataAccount: globalLevel1GameDataAccount as any,
+            chestVaultAccount: chestVaultAccount as any,
+            player: publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+
+        const { blockhash, lastValidBlockHeight } =
+          await connection.getLatestBlockhash();
+
+        const confirmTransaction = await connection.confirmTransaction({
+          blockhash,
+          lastValidBlockHeight,
+          signature: txHash,
+        });
+
+        console.log("confirmTransaction", confirmTransaction);
+        setCheckingAnswer(false);
+        setLetterToGuess("");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async function handleClickClaimPrize() {
+    toast.info("Claiming prize...");
+    if (publicKey) {
+      const transaction = await program.methods
+        .getChestReward()
+        .accounts({
+          gameDataAccount: globalLevel1GameDataAccount as any,
+          chestVaultAccount: chestVaultAccount as any,
+          player: publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .transaction();
+
+      const txHash = await sendTransaction(transaction, connection);
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      console.log("latest blockhash", blockhash);
+
+      const confirmTransaction = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature: txHash,
+      });
+
+      console.log("confirmTransaction", confirmTransaction);
+      toast.success(
+        `Success! 
+            https://explorer.solana.com/tx/${txHash}?cluster=devnet
+          `,
+      );
+    } else {
+      try {
+        const response = await fetch("/api/sendTransaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction: "claimPrize" }),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        toast.error(error as string);
+        console.error(error);
+      }
+    }
+    window.location.reload();
+  }
+
+  async function handleClickWithdraw() {
+    toast.info("Withdrawing...");
+    if (publicKey) {
+      const transaction = await program.methods
+        .withdraw()
+        .accounts({
+          chestVaultAccount: chestVaultAccount as any,
+          gameDataAccount: globalLevel1GameDataAccount as any,
+          signer: publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .transaction();
+
+      const txHash = await sendTransaction(transaction, connection);
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      console.log("latest blockhash", blockhash);
+
+      const confirmTransaction = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature: txHash,
+      });
+
+      console.log("confirmTransaction", confirmTransaction);
+      toast.success(
+        `Success! 
+            https://explorer.solana.com/tx/${txHash}?cluster=devnet
+          `,
+      );
+    } else {
+      try {
+        const response = await fetch("/api/sendTransaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction: "withdraw" }),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        toast.error(error as string);
+        console.error(error);
+      }
+    }
+    window.location.reload();
+  }
+
+  const fetchData = async (pda: PublicKey) => {
+    console.log("Fetching GameDataAccount state...", pda.toString());
+
+    try {
+      const account = await program.account.GameDataAccount.fetch(pda);
+      console.log("GameDataAccount state: ", account);
+      setGameDataAccount(account);
+    } catch (error) {
+      console.log(`Error fetching GameDataAccount state: ${error}`);
+    }
+  };
+
+  async function getTreasureAccount() {
+    const treasure = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
+      program.programId
+    );
+    console.log("treasure", treasure[0].toString());
+    setChestVaultAccount(treasure[0]);
+
+    // get data from chest vault account
+    const chest_vault_account = await program.account.ChestVaultAccount?.fetch(
+      treasure[0],
+    );
+    const chest_reward = (chest_vault_account as any)?.chestReward?.toNumber();
+    console.log("chest_reward", chest_reward);
+  }
+
+  async function getGameTreasureAccount() {
+    const selected_creator = new PublicKey(selectedCreator as any);
+    const global_data = await PublicKey.findProgramAddressSync(
+      [Buffer.from("hangmanData"), selected_creator.toBuffer()],
+      program.programId,
+    );
+
+    setGlobalLevel1GameDataAccount(global_data[0]);
+
+    const treasure = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("chestVault"), selected_creator.toBuffer()],
+      program.programId,
+    );
+    console.log("treasure", treasure[0].toString());
+    setChestVaultAccount(treasure[0]);
+  }
+
+  // **********************************
+  const renderCreateGame = () => {
+    return (
+      <Box>
+        <Box>
+          <Text>Secret Word</Text>
+          <Text>Max 5 letters</Text>
+          <input
+            type="text"
+            // max 10 letters
+            maxLength={10}
+            value={secretWord}
+            onChange={(e) => setSecretWord(e.target.value)}
+          />
+        </Box>
+
+        <Box>
+          <Text>Entry Fee</Text>
+          <input
+            type="text"
+            value={entryFee}
+            onChange={(e) => setEntryFee(e.target.value)}
+          />
+        </Box>
+
+        <Box>
+          <Text>Max Attempts on Game</Text>
+          <input
+            type="text"
+            value={maxAttempts}
+            onChange={(e) => setMaxAttempts(e.target.value)}
+          />
+        </Box>
+
+        <Box>
+          <Text>Chest Reward</Text>
+          <input
+            type="text"
+            value={chestReward}
+            onChange={(e) => setChestReward(e.target.value)}
+          />
+        </Box>
+
+        <Button
+          width="100px"
+          isLoading={loadingInitialize}
+          onClick={handleClickInitialize}
+        >
+          Initialize
+        </Button>
+      </Box>
+    );
+  };
+
+  // GAME BOARD RENDER SECTION
+
+  const renderGameBoard = () => {
+    return (
+      <Box>
+        <img
+          src={activeImage ? `/${activeImage}.png` : "/0.png"}
+          alt="hangman"
+          width="200"
+        />
+        {secretWordOnChain?.length > 0 && (
+          <Box
+            style={{
+              fontSize: "2rem",
+              fontFamily: "monospace",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0px",
+            }}
+          >
+            <Box
+              style={{
+                fontSize: "2rem",
+                fontFamily: "monospace",
+                display: "flex",
+                flexDirection: "row",
+                gap: "10px",
+                height: "fit-content",
+              }}
+            >
+              {correctLetters.map((letter, index) => {
+                return (
+                  <Box
+                    key={index}
+                    style={{
+                      // textDecoration: 'underline',
+                      // textDecorationColor: 'green',
+                      textDecorationThickness: "5px",
+                      textDecorationStyle: "double",
+                    }}
+                  >
+                    {/* map out each letter with a space in between, do not put space after last letter */}
+                    {index < correctLetters?.length - 1 ? (
+                      <Box>{letter} </Box>
+                    ) : (
+                      <Box>{letter}</Box>
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+            <Box
+              style={{
+                fontSize: "2rem",
+                fontFamily: "monospace",
+                display: "flex",
+                flexDirection: "row",
+                gap: "10px",
+              }}
+            >
+              {blanks.map((letter, index) => {
+                return (
+                  <Box
+                    key={index}
+                    style={{
+                      textDecoration: "underline",
+                      textDecorationColor: "red",
+                      textDecorationThickness: "5px",
+                      textDecorationStyle: "double",
+                    }}
+                  >
+                    {letter}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        )}
+
+        <Box>
+          <Text>
+            Owner:{" "}
+            {authorityOnChain.toString().slice(0, 4) +
+              "..." +
+              authorityOnChain.toString().slice(-4)}
+          </Text>
+          <Text>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</Text>
+          <Text>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</Text>
+          <Text>Attempts Left: {maxAttemptsOnChain}</Text>
+          {playerIndexInGameList != null ? (
+            <Box>
+              <Text>Guesses left: {guessesLeft}</Text>
+              <Text>Guessed letters: {guessedLetters?.join(" | ")}</Text>
+              {/* display correct letters seperated by a space */}
+              {/* display the correct letters underlined */}
+              <Text>Correct letters: {correctLetters}</Text>
+              <Box>
+                <input
+                  type="text"
+                  // limit to one character
+                  maxLength={1}
+                  value={letterToGuess}
+                  placeholder="Guess a letter"
+                  onChange={(event) => {
+                    if (!guessedLetters?.includes(event.target.value)) {
+                      setLetterToGuess(event.target.value);
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => handleClickRight(letterToGuess)}
+                  // if 'enter' is pressed, guess the letter
+                  // onKeyPress={(event) => {
+                  //     if (event.key === 'Enter') {
+                  //         guessLetter(letterToGuess);
+                  //     }
+                  // }}
+                >
+                  Guess
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            <Box>
+              <Button
+                width="100px"
+                isLoading={loadingInitialize}
+                onClick={handleClickPlayerStartGame}
+              >
+                Start Game
+              </Button>
+            </Box>
+          )}
+        </Box>
+        <Box></Box>
+      </Box>
+    );
+  };
+
+  // **********************************
+
+  // USE EFFECTS
+  useEffect(() => {
+    const handleKeyDown = (event: { key: string; }) => {
+      if (event.key === "Enter") {
+        handleClickRight(letterToGuess);
+      }
+      if (event.key === "Escape") {
+        setLetterToGuess("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [letterToGuess]);
+
+  useEffect(() => {
+    if (correctAnswer) {
+      setTimeout(() => {
+        setCorrectAnswer(false);
+      }, 2000);
+    }
+    if (incorrectAnswer) {
+      setTimeout(() => {
+        setIncorrectAnswer(false);
+      }, 2000);
+    }
+  }, [correctAnswer, incorrectAnswer]);
+
+  useEffect(() => {
+    if (!globalLevel1GameDataAccount) return;
+    console.log(
+      "globalLevel1GameDataAccount useEffect",
+      globalLevel1GameDataAccount.toString(),
+    );
+    const subscriptionId = connection.onAccountChange(
+      globalLevel1GameDataAccount,
+      (accountInfo) => {
+        const decoded = program.coder.accounts.decode(
+          "GameDataAccount",
+          accountInfo.data,
+        );
+        console.log("creator list", decoded.allCreators);
+        setListOfCreators(
+          decoded?.allCreators.map((creator: { toString: () => any; }) => {
+            return creator.toString();
+          }),
+        );
+        setGameDataAccount(decoded);
+      },
+    );
+
+    return () => {
+      connection.removeAccountChangeListener(subscriptionId);
+    };
+  }, [connection, globalLevel1GameDataAccount, program]);
+
+  useEffect(() => {
+    if (!chestVaultAccount) return;
+    // toast.info("Checking for ChestVaultAccount updates...")
+    const current_player_position = playerPositionOnChain;
+    const current_incorrect_guesses = incorrectGuesses;
+    const subscriptionId = connection.onAccountChange(
+      chestVaultAccount,
+      (accountInfo) => {
+        const decoded = program.coder.accounts.decode(
+          "ChestVaultAccount",
+          accountInfo.data,
+        );
+        setChestRewardOnChain(decoded.chestReward);
+        setMaxAttemptsOnChain(decoded.maxAttempts);
+        setEntryFeeOnChain(decoded.entryFee);
+        setSecretWordOnChain(decoded.password);
+        setAuthorityOnChain(decoded.creator);
+        setPlayersOnChain(decoded.players);
+        console.log("decoded", decoded);
+        // find the index of the player in the players array
+        const player_vector = decoded.players;
+        console.log("player_vector", player_vector);
+        let player_is_in_game = false;
+        console.log("**********BREAK 1**********");
+        // find the index of publicKey that matches player_vector[i].player.toString()
+        const player_index = player_vector.findIndex((player: { player: { toString: () => string; }; }) => {
+          player_is_in_game = true;
+          return player.player.toString() === publicKey?.toString();
+        });
+        // if the player position is greater than current_player_position then setCorrectAnswer to true
+        if (
+          player_is_in_game &&
+          player_vector[player_index].player_position > current_player_position
+        ) {
+          setCorrectAnswer(true);
+          toast.success("Correct!");
+        } else if (
+          player_vector[player_index].incorrectGuesses >
+          current_incorrect_guesses
+        ) {
+          setIncorrectAnswer(true);
+          setGuessesLeft(guessesLeft - 1);
+          setActiveImage(activeImage + 1);
+          toast.error("Incorrect!");
+        } else if (!player_is_in_game) {
+          toast.error("You are not in this game!");
+        }
+        console.log("**********BREAK 2**********");
+        if (player_is_in_game) {
+          setPlayerPositionOnChain(
+            decoded.players[player_index].playerPosition,
+          );
+          setCorrectLetters(decoded.players[player_index].correctLetters);
+          setIncorrectGuesses(decoded.players[player_index].incorrectGuesses);
+          setGuessedLetters(decoded.players[player_index].guessedLetters);
+          setWinner(decoded.players[player_index].isWinner);
+        }
+        const secret_word_array = decoded.password.split("(*)(*)");
+        setSecretWordOnChainArray(secret_word_array);
+
+        // if playerPosition has changed (increased) then add the letterToGuess to correctLetters
+        if (
+          player_is_in_game &&
+          decoded.playerPosition > current_player_position
+        ) {
+          correctLetters.push(letterToGuess);
+          setCorrectLetters(correctLetters);
+        } else {
+          guessesLeft - 1;
+        }
+        console.log("**********BREAK 3**********");
+        setPlayerPositionOnChain(decoded.playerPosition);
+        toast.success("ChestVaultAccount updated!");
+        // chestBump(decoded.chestReward)
+      },
+    );
+
+    return () => {
+      connection.removeAccountChangeListener(subscriptionId);
+    };
+  }, [connection, chestVaultAccount, program]);
+
+  useEffect(() => {
+    if (publicKey && gameDataAccount == null) {
+      handleClickGetData();
+    }
+  }, [gameDataAccount, publicKey, selectedCreator]);
+
+  useEffect(() => {
+    if (publicKey && chestVaultAccount == null) {
+      getTreasureAccount();
+    }
+    if (
+      publicKey &&
+      selectedCreator &&
+      !creatingNewGame &&
+      !chestVaultAccount
+    ) {
+      console.log("selectedCreator", selectedCreator);
+      const creator_key = new PublicKey(selectedCreator);
+      getGameTreasureAccount();
+      if (globalLevel1GameDataAccount) {
+        fetchData(globalLevel1GameDataAccount);
+      } else {
+        let main_key = new PublicKey(
+          "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
+        );
+        let data = PublicKey.findProgramAddressSync(
+          [Buffer.from("hangmanData"), main_key.toBuffer()],
+          program.programId,
+        );
+        console.log("data*****", data);
+        setGlobalLevel1GameDataAccount(data[0]);
+      }
+    }
+    if (publicKey && creatingNewGame) {
+      const creator_key = new PublicKey(publicKey.toString());
+      if (globalLevel1GameDataAccount) {
+        fetchData(globalLevel1GameDataAccount).then((data) => {
+          console.log("data", data);
+        });
+      } else {
+        let data = PublicKey.findProgramAddressSync(
+          [Buffer.from("hangmanData"), creator_key.toBuffer()],
+          program.programId,
+        );
+        console.log("data", data);
+        setGlobalLevel1GameDataAccount(data[0]);
+      }
+    }
+  }, [
+    publicKey,
+    globalLevel1GameDataAccount,
+    selectedCreator,
+    creatingNewGame,
+  ]);
+
+  return (
+    <Box>
+      <ToastContainer />
+      {!loading && (
+        <>
+          <Flex px={4} py={4}>
+            <Spacer />
+            <WalletMultiButton />
+          </Flex>
+          <VStack justifyContent="center" alignItems="center" height="75vh">
+            <VStack>
+              <Box>
+                <Text>Create New Game?</Text>
+                <Button
+                  width="100px"
+                  isLoading={loadingInitialize}
+                  onClick={handleClickCreateGame}
+                >
+                  {creatingNewGame ? "Cancel" : "Create"}
+                </Button>
+                <Button width="100px" onClick={handleClickGetData}>
+                  Get Data
+                </Button>
+              </Box>
+              {listOfCreators && renderCreatorSelection()}
+              {creatingNewGame && !selectedCreator && renderCreateGame()}
+              <Heading fontSize="xl">{message}</Heading>
+              {/* <Text fontSize="6xl">{playerPosition}</Text> */}
+              <HStack>
+                {/* create a form for a user to create game */}
+                {/* form needs to have a password, entry fee, max attempts, and chest reward */}
+                {!loading && chestVaultAccount && selectedCreator != null && (
+                  <>{renderGameBoard()}</>
+                )}
+              </HStack>
+
+              {winner && (
+                <Box>
+                  <Text>You won!</Text>
+                  <Button
+                    width="100px"
+                    isLoading={loadingInitialize}
+                    onClick={handleClickClaimPrize}
+                  >
+                    Claim Prize
+                  </Button>
+                </Box>
+              )}
+              {listOfCreators &&
+                chestVaultAccount &&
+                selectedCreator?.toString() == publicKey?.toString() && (
+                  <Button
+                    width="100px"
+                    isLoading={loadingInitialize}
+                    onClick={handleClickWithdraw}
+                  >
+                    Withdraw all funds in chest
+                  </Button>
+                )}
+            </VStack>
+          </VStack>
+        </>
+      )}
+    </Box>
+  );
+};
+
+export default Game;
