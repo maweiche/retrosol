@@ -1,0 +1,31 @@
+/* this is going to be a header that flashes like a neon sign upon loading */
+/* it will be used in the home page */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+.header {
+    font-size: 72px;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    width: fit-content;
+    white-space: nowrap;
+    color: #e86800ca;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #0ff,
+    0 0 70px #0ff, 0 0 80px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
+    animation: flicker 1.5s infinite alternate;
+    z-index: 99;
+    display: flex;
+    /* display in middle of parent without making position absolute */
+    padding-left: 100%;
+    padding-top: 20%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes flicker {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
