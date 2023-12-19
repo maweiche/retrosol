@@ -1,6 +1,5 @@
 /* this is going to be a header that flashes like a neon sign upon loading */
 /* it will be used in the home page */
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 .header {
     font-size: 72px;
     font-weight: 700;
