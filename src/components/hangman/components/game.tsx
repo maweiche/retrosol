@@ -1,16 +1,6 @@
 'use client'
 import React from "react";
 import dynamic from "next/dynamic";
-import {
-  VStack,
-  HStack,
-  Button,
-  Text,
-  Box,
-  Flex,
-  Spacer,
-  Heading,
-} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -108,10 +98,10 @@ const Game = () => {
 
   const renderCreatorSelection = () => {
     return (
-      <Box>
+      <div>
         {listOfCreators.length > 0 ? (
-          <Box>
-            <Text>Select a creator</Text>
+          <div>
+            <p>Select a creator</p>
             <select
               value={selectedCreator?.toString()}
               onChange={(e) => handleClickSelectCreator(e.target.value)}
@@ -125,17 +115,17 @@ const Game = () => {
                 );
               })}
             </select>
-          </Box>
+          </div>
         ) : (
-          <Box>
+          <div>
             {creatingNewGame ? (
-              <Text>Enter your settings</Text>
+              <p>Enter your settings</p>
             ) : (
-              <Text>No active games, try creating one!</Text>
+              <p>No active games, try creating one!</p>
             )}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
     );
   };
 
@@ -643,54 +633,52 @@ const Game = () => {
   // **********************************
   const renderCreateGame = () => {
     return (
-      <Box>
-        <Box>
-          <Text>Secret Word</Text>
-          <Text>Max 10 letters</Text>
+      <div>
+        <div>
+          <p>Secret Word</p>
+          <p>Max 10 letters</p>
           <input
-            type="text"
+            type="p"
             // max 10 letters
             maxLength={10}
             value={secretWord!}
             onChange={(e) => setSecretWord(e.target.value.toLowerCase())}
           />
-        </Box>
+        </div>
 
-        <Box>
-          <Text>Entry Fee</Text>
+        <div>
+          <p>Entry Fee</p>
           <input
-            type="text"
+            type="p"
             value={entryFee!}
             onChange={(e) => setEntryFee(e.target.value)}
           />
-        </Box>
+        </div>
 
-        <Box>
-          <Text>Max Attempts on Game</Text>
+        <div>
+          <p>Max Attempts on Game</p>
           <input
-            type="text"
+            type="p"
             value={maxAttempts!}
             onChange={(e) => setMaxAttempts(e.target.value)}
           />
-        </Box>
+        </div>
 
-        <Box>
-          <Text>Chest Reward</Text>
+        <div>
+          <p>Chest Reward</p>
           <input
-            type="text"
+            type="p"
             value={chestReward!}
             onChange={(e) => setChestReward(e.target.value)}
           />
-        </Box>
+        </div>
 
-        <Button
-          width="100px"
-          isLoading={loadingInitialize}
+        <button
           onClick={handleClickInitialize}
         >
           Initialize
-        </Button>
-      </Box>
+        </button>
+      </div>
     );
   };
 
@@ -698,27 +686,27 @@ const Game = () => {
 
   const renderGameBoard = () => {
     return (
-      <Box>
+      <div>
         <img
           src={activeImage ? `/hangman${activeImage}.png` : "/hangman0.png"}
           alt="hangman"
           width="200"
         />
         {secretWordOnChain?.length > 0 && (
-          <Box
+          <div
             style={{
               fontSize: "2rem",
               fontFamily: "monospace",
-              display: "flex",
+              display: "div",
               flexDirection: "column",
               gap: "0px",
             }}
           >
-            <Box
+            <div
               style={{
                 fontSize: "2rem",
                 fontFamily: "monospace",
-                display: "flex",
+                display: "div",
                 flexDirection: "row",
                 gap: "10px",
                 height: "fit-content",
@@ -726,84 +714,84 @@ const Game = () => {
             >
               {correctLetters.map((letter, index) => {
                 return (
-                  <Box
+                  <div
                     key={index}
                     style={{
-                      // textDecoration: 'underline',
-                      // textDecorationColor: 'green',
-                      textDecorationThickness: "5px",
-                      textDecorationStyle: "double",
+                      // pDecoration: 'underline',
+                      // pDecorationColor: 'green',
+                      pDecorationThickness: "5px",
+                      pDecorationStyle: "double",
                     }}
                   >
                     {/* map out each letter with a space in between, do not put space after last letter */}
                     {index < correctLetters?.length - 1 ? (
-                      <Box>{letter} </Box>
+                      <div>{letter} </div>
                     ) : (
-                      <Box>{letter}</Box>
+                      <div>{letter}</div>
                     )}
-                  </Box>
+                  </div>
                 );
               })}
-            </Box>
-            <Box
+            </div>
+            <div
               style={{
                 fontSize: "2rem",
                 fontFamily: "monospace",
-                display: "flex",
+                display: "div",
                 flexDirection: "row",
                 gap: "10px",
               }}
             >
               {blanks.map((letter, index) => {
                 return (
-                  <Box
+                  <div
                     key={index}
                     style={{
-                      textDecoration: "underline",
-                      textDecorationColor: "red",
-                      textDecorationThickness: "5px",
-                      textDecorationStyle: "double",
+                      pDecoration: "underline",
+                      pDecorationColor: "red",
+                      pDecorationThickness: "5px",
+                      pDecorationStyle: "double",
                     }}
                   >
                     {letter}
-                  </Box>
+                  </div>
                 );
               })}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
-        <Box>
-          <Text>
+        <div>
+          <p>
             Owner:{" "}
             {authorityOnChain.toString().slice(0, 4) +
               "..." +
               authorityOnChain.toString().slice(-4)}
-          </Text>
+          </p>
           {maxAttemptsOnChain > 0 ? (
             <div>
-              <Text>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</Text>
-              <Text>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</Text>
-              <Text>Attempts Left: {maxAttemptsOnChain}</Text>
+              <p>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</p>
+              <p>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</p>
+              <p>Attempts Left: {maxAttemptsOnChain}</p>
             </div>
           ) : (
-            <Text>Game Limit Reached</Text>
+            <p>Game Limit Reached</p>
           )}
           {playerIndexInGameList != null ? (
-            <Box>
-              <Text>Guesses left: {guessesLeft}</Text>
-              <Text>Guessed letters: {
+            <div>
+              <p>Guesses left: {guessesLeft}</p>
+              <p>Guessed letters: {
                   // string of correct letters seperated by a space != _ and incorrectGuesses
                   guessedLetters?.filter((letter) => {
                     return letter != "_" && letter != incorrectGuesses;
                   })
-                }</Text>
+                }</p>
               {/* display correct letters seperated by a space */}
               {/* display the correct letters underlined */}
-              <Text>Correct letters: {correctLetters}</Text>
-              <Box>
+              <p>Correct letters: {correctLetters}</p>
+              <div>
                 <input
-                  type="text"
+                  type="p"
                   // limit to one character
                   maxLength={1}
                   value={letterToGuess}
@@ -814,7 +802,7 @@ const Game = () => {
                     }
                   }}
                 />
-                <Button
+                <button
                   onClick={() => handleClickRight(letterToGuess)}
                   // if 'enter' is pressed, guess the letter
                   // onKeyPress={(event) => {
@@ -824,23 +812,22 @@ const Game = () => {
                   // }}
                 >
                   Guess
-                </Button>
-              </Box>
-            </Box>
+                </button>
+              </div>
+            </div>
           ) : (
-            <Box>
-              <Button
-                width="100px"
-                isLoading={loadingInitialize}
+            <div>
+              <button
+                // isLoading={loadingInitialize}
                 onClick={handleClickPlayerStartGame}
               >
                 Start Game
-              </Button>
-            </Box>
+              </button>
+            </div>
           )}
-        </Box>
-        <Box></Box>
-      </Box>
+        </div>
+        <div></div>
+      </div>
     );
   };
 
@@ -1040,68 +1027,58 @@ const Game = () => {
   ]);
 
   return (
-    <Box>
+    <div>
       {!loading && (
         <>
-          <Flex px={4} py={4}>
-            <Spacer />
-            <WalletMultiButton />
-          </Flex>
-          <VStack justifyContent="center" alignItems="center" height="75vh">
-            <VStack>
-              <Box>
-                <Text>Create New Game?</Text>
-                <Button
-                  width="100px"
-                  isLoading={loadingInitialize}
+          <div>
+            <div>
+              <div>
+                <p>Create New Game?</p>
+                <button
                   onClick={handleClickCreateGame}
                 >
                   {creatingNewGame ? "Cancel" : "Create"}
-                </Button>
-                <Button width="100px" onClick={handleClickGetData}>
+                </button>
+                <button onClick={handleClickGetData}>
                   Get Data
-                </Button>
-              </Box>
+                </button>
+              </div>
               {listOfCreators && renderCreatorSelection()}
               {creatingNewGame && !selectedCreator && renderCreateGame()}
-              <Heading fontSize="xl">{message}</Heading>
-              {/* <Text fontSize="6xl">{playerPosition}</Text> */}
-              <HStack>
+              <h1 fontSize="xl">{message}</h1>
+              {/* <p fontSize="6xl">{playerPosition}</p> */}
+              <div>
                 {/* create a form for a user to create game */}
                 {/* form needs to have a password, entry fee, max attempts, and chest reward */}
                 {!loading && chestVaultAccount && selectedCreator != null && (
                   <>{renderGameBoard()}</>
                 )}
-              </HStack>
+              </div>
 
               {winner && (
-                <Box>
-                  <Text>You won!</Text>
-                  <Button
-                    width="100px"
-                    isLoading={loadingInitialize}
+                <div>
+                  <p>You won!</p>
+                  <button
                     onClick={handleClickClaimPrize}
                   >
                     Claim Prize
-                  </Button>
-                </Box>
+                  </button>
+                </div>
               )}
               {listOfCreators &&
                 chestVaultAccount &&
                 selectedCreator?.toString() == publicKey?.toString() && (
-                  <Button
-                    width="100px"
-                    isLoading={loadingInitialize}
+                  <button
                     onClick={handleClickWithdraw}
                   >
                     Withdraw all funds in chest
-                  </Button>
+                  </button>
                 )}
-            </VStack>
-          </VStack>
+            </div>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   );
 };
 
