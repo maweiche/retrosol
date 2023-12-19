@@ -719,8 +719,7 @@ const Game = () => {
                     style={{
                       // pDecoration: 'underline',
                       // pDecorationColor: 'green',
-                      pDecorationThickness: "5px",
-                      pDecorationStyle: "double",
+                      
                     }}
                   >
                     {/* map out each letter with a space in between, do not put space after last letter */}
@@ -747,10 +746,7 @@ const Game = () => {
                   <div
                     key={index}
                     style={{
-                      pDecoration: "underline",
-                      pDecorationColor: "red",
-                      pDecorationThickness: "5px",
-                      pDecorationStyle: "double",
+                
                     }}
                   >
                     {letter}
@@ -1045,7 +1041,7 @@ const Game = () => {
               </div>
               {listOfCreators && renderCreatorSelection()}
               {creatingNewGame && !selectedCreator && renderCreateGame()}
-              <h1 fontSize="xl">{message}</h1>
+              <h1>{message}</h1>
               {/* <p fontSize="6xl">{playerPosition}</p> */}
               <div>
                 {/* create a form for a user to create game */}
