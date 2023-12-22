@@ -78,7 +78,7 @@ const Game = () => {
 
   // game selection logic here
   async function handleClickSelectCreator(creator: any) {
-    console.log("creator", creator);
+    //console.log("creator", creator);
     setSelectedCreator(creator);
     await handleClickGetData();
   }
@@ -141,7 +141,7 @@ const Game = () => {
       [Buffer.from("hangmanData"), main_key.toBuffer()],
       program.programId,
     );
-    console.log("data", data);
+    //console.log("data", data);
     setGlobalLevel1GameDataAccount(data[0]);
 
     const game_account_info = await connection.getAccountInfo(data[0]);
@@ -152,9 +152,9 @@ const Game = () => {
         game_account_info?.data,
       );
 
-      console.log("game_data_decoded", game_data_decoded);
+      //console.log("game_data_decoded", game_data_decoded);
 
-      console.log("creator list", game_data_decoded?.allCreators);
+      //console.log("creator list", game_data_decoded?.allCreators);
       setListOfCreators(
         game_data_decoded?.allCreators.map((creator: { toString: () => any; }) => {
           return creator.toString();
@@ -169,7 +169,7 @@ const Game = () => {
         [Buffer.from("chestVault"), creator_key.toBuffer()],
         program.programId,
       );
-      console.log("treasure", treasure[0].toString());
+      //console.log("treasure", treasure[0].toString());
       setChestVaultAccount(treasure[0]);
 
       const treasure_account_info = await connection.getAccountInfo(
@@ -177,7 +177,7 @@ const Game = () => {
       );
 
       if (treasure_account_info != null) {
-        console.log(
+        //console.log(
           "treasure_account_info",
           treasure_account_info.owner.toString(),
         );
@@ -185,13 +185,13 @@ const Game = () => {
           "ChestVaultAccount",
           treasure_account_info?.data,
         );
-        console.log("chest vault password", chest_vault_account?.password);
-        console.log("chest vault reward", chest_vault_account?.chestReward);
-        console.log(
+        //console.log("chest vault password", chest_vault_account?.password);
+        //console.log("chest vault reward", chest_vault_account?.chestReward);
+        //console.log(
           "chest vault max attempts",
           chest_vault_account?.maxAttemptsLeft,
         );
-        console.log("chest vault entry fee", chest_vault_account?.entryFee);
+        //console.log("chest vault entry fee", chest_vault_account?.entryFee);
         // convert from bn to number
         setChestRewardOnChain(chest_vault_account?.chestReward.toNumber());
         setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
@@ -205,7 +205,7 @@ const Game = () => {
 
         const correct_letters = [];
         // separate the secret word by (*)(*) and create an array of blanks
-        console.log("secret_word_array", secret_word_array.split(process.env.NEXT_PUBLIC_SPLIT_KEY));
+        //console.log("secret_word_array", secret_word_array.split(process.env.NEXT_PUBLIC_SPLIT_KEY));
         for (let i = 0; i < secret_word_array?.split(process.env.NEXT_PUBLIC_SPLIT_KEY); i++) {
           correct_letters.push("_");
           const blanks: string[] = [];
@@ -213,9 +213,9 @@ const Game = () => {
         }
         setBlanks(correct_letters);
         setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
-        console.log(chest_vault_account?.chestReward);
-        console.log("secret_word_array", secret_word_array);
-        console.log("players", chest_vault_account?.players);
+        //console.log(chest_vault_account?.chestReward);
+        //console.log("secret_word_array", secret_word_array);
+        //console.log("players", chest_vault_account?.players);
         const list_of_players = chest_vault_account?.players;
         setListOfPlayers(chest_vault_account?.players);
         // find the index of the player in the players array
@@ -224,11 +224,11 @@ const Game = () => {
           const player_index = list_of_players.findIndex((player: { player: { toString: () => string; }; }) => {
             return player.player.toString() === publicKey?.toString();
           });
-          console.log("player_index", player_index);
+          //console.log("player_index", player_index);
           if (player_index > -1) {
             setPlayerIndexInGameList(player_index);
             if (list_of_players[player_index].incorrectGuesses < 6) {
-              console.log("player info", list_of_players[player_index]);
+              //console.log("player info", list_of_players[player_index]);
               // setCorrectLetters(list_of_players[player_index].correctLetters)
               list_of_players[player_index].correctLetters.forEach((letter: string) => {
                 if (letter != "_") {
@@ -238,15 +238,15 @@ const Game = () => {
               setGuessesLeft(
                 6 - list_of_players[player_index].incorrectGuesses,
               );
-              console.log("guessesLeft", 6 - list_of_players[player_index].incorrectGuesses);
+              //console.log("guessesLeft", 6 - list_of_players[player_index].incorrectGuesses);
               setIncorrectGuesses(
                 list_of_players[player_index].incorrectGuesses,
               );
-              console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
+              //console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
               setCorrectLetters(
                 list_of_players[player_index].correctLetters,
               )
-              console.log("correctLetters", list_of_players[player_index].correctLetters);
+              //console.log("correctLetters", list_of_players[player_index].correctLetters);
               setWinner(
                 list_of_players[player_index].isWinner,
               )
@@ -277,21 +277,21 @@ const Game = () => {
     }
     const new_secret_word = hashed_word_array.join(process.env.NEXT_PUBLIC_SPLIT_KEY); // dog => d(*)(*)o(*)(*)g
     // const new_secret_word = hashed_word_array;
-    console.log("new_secret_word", new_secret_word);
+    //console.log("new_secret_word", new_secret_word);
     return new_secret_word;
   }
 
   async function handleClickInitialize() {
-    console.log("entryFee", entryFee);
-    console.log("secretWord", secretWord);
+    //console.log("entryFee", entryFee);
+    //console.log("secretWord", secretWord);
     const new_secret_word = await hashWord(secretWord);
-    console.log("new_secret_word", new_secret_word);
-    console.log("chestReward", chestReward);
-    console.log("maxAttempts", maxAttempts);
+    //console.log("new_secret_word", new_secret_word);
+    //console.log("chestReward", chestReward);
+    //console.log("maxAttempts", maxAttempts);
     notify({ type: 'loading', message: 'loading', description: 'Initializing game...' });
     
     if (publicKey) {
-      console.log("chestVaultAccount", chestVaultAccount?.toString());
+      //console.log("chestVaultAccount", chestVaultAccount?.toString());
       const reward_as_bn = new anchor.BN(
         // parse chestReward as a float and convert to lamports
         parseFloat(chestReward!) * anchor.web3.LAMPORTS_PER_SOL,
@@ -300,7 +300,7 @@ const Game = () => {
         // parse entryFee as a float and convert to lamports
         parseFloat(entryFee!) * anchor.web3.LAMPORTS_PER_SOL,
       );
-      console.log("entry_fee_as_bn", entry_fee_as_bn.toString());
+      //console.log("entry_fee_as_bn", entry_fee_as_bn.toString());
       const max_attempts = parseInt(maxAttempts!);
 
       const transaction = await program.methods
@@ -323,7 +323,7 @@ const Game = () => {
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
 
-      console.log("latest blockhash", blockhash);
+      //console.log("latest blockhash", blockhash);
       const confirmTransaction = await connection.confirmTransaction({
         blockhash,
         lastValidBlockHeight,
@@ -331,24 +331,24 @@ const Game = () => {
       });
       setCreatingNewGame(false);
       handleClickGetData();
-      console.log("confirmTransaction", confirmTransaction);
-      console.log(
+      //console.log("confirmTransaction", confirmTransaction);
+      //console.log(
         "txHash",
         `https://solana.fm/tx/${txHash}/?cluster=devnet-solana`,
       );
       notify({ type: 'success', message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`, description: 'Success Txn Link' });
     } else {
       try {
-        console.log("trying backup");
+        //console.log("trying backup");
         const response = await fetch("/api/sendTransaction", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ instruction: "initializeLevelOne" }),
         });
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
       }
     }
   }
@@ -372,14 +372,14 @@ const Game = () => {
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
 
-      console.log("latest blockhash", blockhash);
+      //console.log("latest blockhash", blockhash);
       const confirmTransaction = await connection.confirmTransaction({
         blockhash,
         lastValidBlockHeight,
         signature: txHash,
       });
 
-      console.log("confirmTransaction", confirmTransaction);
+      //console.log("confirmTransaction", confirmTransaction);
 
       handleClickGetData();
     } else {
@@ -390,9 +390,9 @@ const Game = () => {
           body: JSON.stringify({ instruction: "playerStartsGame" }),
         });
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
       } catch (error) {
-        console.error(error);
+        //console.error(error);
       }
     }
   }
@@ -412,23 +412,23 @@ const Game = () => {
         lower_case_letter,
         secret_word_array[i],
       );
-      console.log(
+      //console.log(
         "comparing letterToGuess to secret_word_array[i]",
         lower_case_letter,
         secret_word_array[i],
       );
-      console.log("is_correct", is_correct);
+      //console.log("is_correct", is_correct);
       if (is_correct) {
         correct_letter = true;
         correct_letter_indexes.push(i);
       }
     }
-    console.log("correct_letter_indexes", correct_letter_indexes);
+    //console.log("correct_letter_indexes", correct_letter_indexes);
     setCheckingAnswer(true);
     if (publicKey && correct_letter) {
-      console.log("letterToGuess", letterToGuess);
-      console.log("gameDataAccount", globalLevel1GameDataAccount?.toString());
-      console.log("chestVaultAccount", chestVaultAccount?.toString());
+      //console.log("letterToGuess", letterToGuess);
+      //console.log("gameDataAccount", globalLevel1GameDataAccount?.toString());
+      //console.log("chestVaultAccount", chestVaultAccount?.toString());
       const transaction = await program.methods
         // .addCorrectLetter(letterToGuess, correct_letter_indexes) //err: requires (length 1) Buffer as src
         .addCorrectLetter(letterToGuess, Buffer.from(correct_letter_indexes))
@@ -451,7 +451,7 @@ const Game = () => {
         signature: txHash,
       });
 
-      console.log("confirmTransaction", confirmTransaction);
+      //console.log("confirmTransaction", confirmTransaction);
       setCheckingAnswer(false);
       setLetterToGuess("");
     } else if (publicKey && !correct_letter) {
@@ -478,11 +478,11 @@ const Game = () => {
           signature: txHash,
         });
 
-        console.log("confirmTransaction", confirmTransaction);
+        //console.log("confirmTransaction", confirmTransaction);
         setCheckingAnswer(false);
         setLetterToGuess("");
       } catch (error) {
-        console.error(error);
+        //console.error(error);
       }
     }
   }
@@ -505,7 +505,7 @@ const Game = () => {
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
 
-      console.log("latest blockhash", blockhash);
+      //console.log("latest blockhash", blockhash);
 
       const confirmTransaction = await connection.confirmTransaction({
         blockhash,
@@ -513,7 +513,7 @@ const Game = () => {
         signature: txHash,
       });
 
-      console.log("confirmTransaction", confirmTransaction);
+      //console.log("confirmTransaction", confirmTransaction);
       notify({ type: 'success', message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`, description: 'Success!' });
     } else {
       try {
@@ -523,10 +523,10 @@ const Game = () => {
           body: JSON.stringify({ instruction: "claimPrize" }),
         });
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
       } catch (error) {
         notify({ type: 'error', message: `Error!`, description: 'Error!' });
-        console.error(error);
+        //console.error(error);
       }
     }
     window.location.reload();
@@ -550,7 +550,7 @@ const Game = () => {
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
 
-      console.log("latest blockhash", blockhash);
+      //console.log("latest blockhash", blockhash);
 
       const confirmTransaction = await connection.confirmTransaction({
         blockhash,
@@ -558,7 +558,7 @@ const Game = () => {
         signature: txHash,
       });
 
-      console.log("confirmTransaction", confirmTransaction);
+      //console.log("confirmTransaction", confirmTransaction);
       notify({ type: 'success', message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`, description: 'Success!' });
     } else {
       try {
@@ -568,24 +568,24 @@ const Game = () => {
           body: JSON.stringify({ instruction: "withdraw" }),
         });
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
       } catch (error) {
         notify({ type: 'error', message: 'Error!', description: 'Error!' });
-        console.error(error);
+        //console.error(error);
       }
     }
     window.location.reload();
   }
 
   const fetchData = async (pda: PublicKey) => {
-    console.log("Fetching GameDataAccount state...", pda.toString());
+    //console.log("Fetching GameDataAccount state...", pda.toString());
 
     try {
       const account = await program.account.GameDataAccount.fetch(pda);
-      console.log("GameDataAccount state: ", account);
+      //console.log("GameDataAccount state: ", account);
       setGameDataAccount(account);
     } catch (error) {
-      console.log(`Error fetching GameDataAccount state: ${error}`);
+      //console.log(`Error fetching GameDataAccount state: ${error}`);
     }
   };
 
@@ -594,7 +594,7 @@ const Game = () => {
       [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
       program.programId
     );
-    console.log("treasure", treasure[0].toString());
+    //console.log("treasure", treasure[0].toString());
     setChestVaultAccount(treasure[0]);
 
     // get data from chest vault account
@@ -602,7 +602,7 @@ const Game = () => {
       treasure[0],
     );
     const chest_reward = (chest_vault_account as any)?.chestReward?.toNumber();
-    console.log("chest_reward", chest_reward);
+    //console.log("chest_reward", chest_reward);
   }
 
   async function getGameTreasureAccount() {
@@ -618,7 +618,7 @@ const Game = () => {
       [Buffer.from("chestVault"), selected_creator.toBuffer()],
       program.programId,
     );
-    console.log("treasure", treasure[0].toString());
+    //console.log("treasure", treasure[0].toString());
     setChestVaultAccount(treasure[0]);
   }
 
@@ -845,7 +845,7 @@ const Game = () => {
 
   useEffect(() => {
     if (!globalLevel1GameDataAccount) return;
-    console.log(
+    //console.log(
       "globalLevel1GameDataAccount useEffect",
       globalLevel1GameDataAccount.toString(),
     );
@@ -856,7 +856,7 @@ const Game = () => {
           "GameDataAccount",
           accountInfo.data,
         );
-        console.log("creator list", decoded.allCreators);
+        //console.log("creator list", decoded.allCreators);
         setListOfCreators(
           decoded?.allCreators.map((creator: { toString: () => any; }) => {
             return creator.toString();
@@ -888,12 +888,12 @@ const Game = () => {
         setSecretWordOnChain(decoded.password);
         setAuthorityOnChain(decoded.creator);
         setPlayersOnChain(decoded.players);
-        console.log("decoded", decoded);
+        //console.log("decoded", decoded);
         // find the index of the player in the players array
         const player_vector = decoded.players;
-        console.log("player_vector", player_vector);
+        //console.log("player_vector", player_vector);
         let player_is_in_game = false;
-        console.log("**********BREAK 1**********");
+        //console.log("**********BREAK 1**********");
         // find the index of publicKey that matches player_vector[i].player.toString()
         const player_index = player_vector.findIndex((player: { player: { toString: () => string; }; }) => {
           player_is_in_game = true;
@@ -917,7 +917,7 @@ const Game = () => {
         } else if (!player_is_in_game) {
           notify({ type: 'error', message: `You are not in this game!`, description: 'Error!' });
         }
-        console.log("**********BREAK 2**********");
+        //console.log("**********BREAK 2**********");
         if (player_is_in_game) {
           setPlayerPositionOnChain(
             decoded.players[player_index].playerPosition,
@@ -940,7 +940,7 @@ const Game = () => {
         } else {
           guessesLeft - 1;
         }
-        console.log("**********BREAK 3**********");
+        //console.log("**********BREAK 3**********");
         setPlayerPositionOnChain(decoded.playerPosition);
         notify({ type: 'success', message: 'Chest Vault Account updated!', description: 'Success!' });
         // chestBump(decoded.chestReward)
@@ -968,7 +968,7 @@ const Game = () => {
       !creatingNewGame &&
       !chestVaultAccount
     ) {
-      console.log("selectedCreator", selectedCreator);
+      //console.log("selectedCreator", selectedCreator);
       const creator_key = new PublicKey(selectedCreator);
       getGameTreasureAccount();
       if (globalLevel1GameDataAccount) {
@@ -981,7 +981,7 @@ const Game = () => {
           [Buffer.from("hangmanData"), main_key.toBuffer()],
           program.programId,
         );
-        console.log("data*****", data);
+        //console.log("data*****", data);
         setGlobalLevel1GameDataAccount(data[0]);
       }
     }
@@ -989,14 +989,14 @@ const Game = () => {
       const creator_key = new PublicKey(publicKey.toString());
       if (globalLevel1GameDataAccount) {
         fetchData(globalLevel1GameDataAccount).then((data) => {
-          console.log("data", data);
+          //console.log("data", data);
         });
       } else {
         let data = PublicKey.findProgramAddressSync(
           [Buffer.from("hangmanData"), creator_key.toBuffer()],
           program.programId,
         );
-        console.log("data", data);
+        //console.log("data", data);
         setGlobalLevel1GameDataAccount(data[0]);
       }
     }
