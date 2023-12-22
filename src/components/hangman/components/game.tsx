@@ -205,8 +205,8 @@ const Game = () => {
 
         const correct_letters = [];
         // separate the secret word by (*)(*) and create an array of blanks
-        console.log("secret_word_array", secret_word_array.split("(*)(*)"));
-        for (let i = 0; i < secret_word_array?.split("(*)(*)"); i++) {
+        console.log("secret_word_array", secret_word_array.split(process.env.NEXT_PUBLIC_SPLIT_KEY));
+        for (let i = 0; i < secret_word_array?.split(process.env.NEXT_PUBLIC_SPLIT_KEY); i++) {
           correct_letters.push("_");
           const blanks: string[] = [];
           blanks.push("_");
@@ -275,7 +275,7 @@ const Game = () => {
       let hashed_word = await hash(secret_word_array[i], 10); //10 is the salt
       hashed_word_array.push(hashed_word);
     }
-    const new_secret_word = hashed_word_array.join("(*)(*)"); // dog => d(*)(*)o(*)(*)g
+    const new_secret_word = hashed_word_array.join(process.env.NEXT_PUBLIC_SPLIT_KEY); // dog => d(*)(*)o(*)(*)g
     // const new_secret_word = hashed_word_array;
     console.log("new_secret_word", new_secret_word);
     return new_secret_word;
@@ -404,7 +404,7 @@ const Game = () => {
     let correct_letter = false;
     let correct_letter_indexes = [];
     const secret_word = secretWordOnChain;
-    const secret_word_array = secret_word.split("(*)(*)");
+    const secret_word_array = secret_word.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
     for (let i = 0; i < secret_word_array.length; i++) {
       let lower_case_letter = letterToGuess.toLowerCase();
       // use comparePassword to compare the letterToGuess to each letter in the secret word
@@ -925,7 +925,7 @@ const Game = () => {
           setGuessedLetters(decoded.players[player_index].guessedLetters);
           setWinner(decoded.players[player_index].isWinner);
         }
-        const secret_word_array = decoded.password.split("(*)(*)");
+        const secret_word_array = decoded.password.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
         setSecretWordOnChainArray(secret_word_array);
 
         // if playerPosition has changed (increased) then add the letterToGuess to correctLetters
