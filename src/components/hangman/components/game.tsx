@@ -795,7 +795,9 @@ const Game = () => {
               </div>
             </div>
           ) : (
-            <div>
+            <div
+              className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2'
+            >
               <button
                 // isLoading={loadingInitialize}
                 onClick={handleClickPlayerStartGame}
@@ -1011,12 +1013,17 @@ const Game = () => {
             <div
               className='flex flex-col justify-center items-center space-y-2'
             >
+              <button 
+                onClick={handleClickGetData}
+                // give a white border
+                className='border-2 border-white p-2'
+              >
+                Get Data
+              </button>
               {listOfCreators && renderCreatorSelection()}
               {creatingNewGame && !selectedCreator && renderCreateGame()}
-              <h1>{message}</h1>
-              {/* <p fontSize="6xl">{playerPosition}</p> */}
               <div>
-                {!selectedCreator && selectedCreator != "" && (
+                {!selectedCreator && (
                   <div
                     className='flex flex-col justify-center items-center space-y-2'
                   >
@@ -1030,25 +1037,11 @@ const Game = () => {
                       >
                         {creatingNewGame ? "Cancel" : "Create"}
                       </button>
-                      <button 
-                        onClick={handleClickGetData}
-                        // give a white border
-                        className='border-2 border-white p-2'
-                      >
-                        Get Data
-                      </button>
                     </div>
                   </div>
                 )}
                 {!loading && chestVaultAccount && selectedCreator != null && (
                   <div className='flex flex-col justify-center items-center'>
-                    <button 
-                      onClick={handleClickGetData}
-                      // give a white border
-                      className='border-2 border-white p-2'
-                    >
-                      Get Data
-                    </button>
                     {renderGameBoard()}
                   </div>
                 )}
@@ -1069,6 +1062,7 @@ const Game = () => {
                 selectedCreator?.toString() == publicKey?.toString() && (
                   <button
                     onClick={handleClickWithdraw}
+                    className='border-2 border-white p-2 bg-green-500 hover:bg-green-700'
                   >
                     Withdraw all funds in chest
                   </button>
