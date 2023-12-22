@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { useAutoConnect } from '../contexts/AutoConnectProvider';
 import NetworkSwitcher from './NetworkSwitcher';
 import NavElement from './nav-element';
+import { RequestAirdrop } from './RequestAirdrop';
 
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
@@ -83,6 +84,7 @@ export const AppBar: React.FC = () => {
                   <input type="checkbox" checked={autoConnect} onChange={(e) => setAutoConnect(e.target.checked)} className="toggle" />
                 </label>
                 <NetworkSwitcher />
+                <RequestAirdrop />
               </div>
             </li>
           </ul>

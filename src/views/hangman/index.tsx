@@ -6,18 +6,14 @@ import { notify } from "../../utils/notifications";
 export const HangmanView: FC = ({ }) =>  {
     return (
       <div
-        // className={styles.container}
+        // use tailwind classes here, style the background color to white
+        className='flex flex-col justify-center items-center space-y-2'
       >
           <h1 
             // className={styles.title}
           >
             Welcome to Hangman!
           </h1>
-          <p 
-            // className={styles.description}
-          >
-            Get started by pressing play
-          </p>
           <div 
             // className={styles.grid}
           >

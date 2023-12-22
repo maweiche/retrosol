@@ -9,11 +9,10 @@
 }
 
 .flashingTitle {
-    font-size: 72px;
+    font-size: 64px;
     font-weight: 700;
     text-align: center;
-    /* font-family: 'Bree Serif', serif; */
-    font-family: 'Pixelify Sans', sans-serif;
+    font-family: 'Press Start 2P', sans-serif;
     width: fit-content;
     white-space: nowrap;
     color: #e86800ca;

@@ -40,18 +40,10 @@ const Game = () => {
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listOfCreators, setListOfCreators] = useState<Array<PublicKey>>([]);
-  const [selectedCreator, setSelectedCreator] = useState<PublicKey | null>(
-    null,
-  );
+  const [selectedCreator, setSelectedCreator] = useState<PublicKey | null | string>(null);
   const [listOfPlayers, setListOfPlayers] = useState([]);
-  const [globalLevel1GameDataAccount, setGlobalLevel1GameDataAccount] =
-    useState<PublicKey | null>(null);
-
-  const [loadingInitialize, setLoadingInitialize] = useState(false);
-
-  const [playerPosition, setPlayerPosition] = useState("........");
+  const [globalLevel1GameDataAccount, setGlobalLevel1GameDataAccount] = useState<PublicKey | null>(null);
   const [message, setMessage] = useState("");
-
   const [playerPositionOnChain, setPlayerPositionOnChain] = useState("");
   const [incorrectGuesses, setIncorrectGuesses] = useState("");
   const [secretWordOnChain, setSecretWordOnChain] = useState("");
@@ -63,7 +55,6 @@ const Game = () => {
   const [playersOnChain, setPlayersOnChain] = useState([]);
 
   const [secretWord, setSecretWord] = useState("");
-  const [ogSecretWord, setOgSecretWord] = useState("");
   const [guessesLeft, setGuessesLeft] = useState(6);
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
   const [correctLetters, setCorrectLetters] = useState<string[]>([]);
@@ -73,8 +64,6 @@ const Game = () => {
   const [letterToGuess, setLetterToGuess] = useState("");
   const [correctAnswer, setCorrectAnswer] = useState(false);
   const [incorrectAnswer, setIncorrectAnswer] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [loser, setLoser] = useState(false);
   const [winner, setWinner] = useState(false);
 
   const [creatingNewGame, setCreatingNewGame] = useState(false);
@@ -85,9 +74,7 @@ const Game = () => {
 
   const [gameDataAccount, setGameDataAccount] = useState<any | null>(null);
 
-  const [chestVaultAccount, setChestVaultAccount] = useState<PublicKey | null>(
-    null,
-  );
+  const [chestVaultAccount, setChestVaultAccount] = useState<PublicKey | null>(null);
 
   // game selection logic here
   async function handleClickSelectCreator(creator: any) {
@@ -100,13 +87,16 @@ const Game = () => {
     return (
       <div>
         {listOfCreators.length > 0 ? (
-          <div>
+          <div
+            className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
+          >
             <p>Select a creator</p>
             <select
+              className='text-black'
               value={selectedCreator?.toString()}
               onChange={(e) => handleClickSelectCreator(e.target.value)}
             >
-              <option value="">Select a creator</option>
+              <option value={null}>Select a creator</option>
               {listOfCreators.map((creator: PublicKey, index: number) => {
                 return (
                   <option key={index} value={creator.toString()}>
@@ -117,7 +107,9 @@ const Game = () => {
             </select>
           </div>
         ) : (
-          <div>
+          <div
+            className='flex flex-col justify-center items-center space-y-2 underline'
+          >
             {creatingNewGame ? (
               <p>Enter your settings</p>
             ) : (
@@ -633,41 +625,50 @@ const Game = () => {
   // **********************************
   const renderCreateGame = () => {
     return (
-      <div>
-        <div>
+      <div
+        className='flex flex-col justify-center items-center space-y-2'
+      >
+        <div
+          className='flex flex-col justify-center items-center space-y-2'
+        >
           <p>Secret Word</p>
           <p>Max 10 letters</p>
           <input
-            type="p"
-            // max 10 letters
+            style={{ color: 'black', padding: '4px' }}
             maxLength={10}
             value={secretWord!}
             onChange={(e) => setSecretWord(e.target.value.toLowerCase())}
           />
         </div>
 
-        <div>
+        <div
+          className='flex flex-col justify-center items-center space-y-2'
+        >
           <p>Entry Fee</p>
           <input
-            type="p"
+            style={{ color: 'black', padding: '4px' }}
             value={entryFee!}
             onChange={(e) => setEntryFee(e.target.value)}
           />
         </div>
 
-        <div>
+        <div
+          className='flex flex-col justify-center items-center space-y-2'
+        >
           <p>Max Attempts on Game</p>
           <input
-            type="p"
+            style={{ color: 'black', padding: '4px' }}
             value={maxAttempts!}
             onChange={(e) => setMaxAttempts(e.target.value)}
           />
         </div>
 
-        <div>
+        <div
+          className='flex flex-col justify-center items-center space-y-2'
+        >
           <p>Chest Reward</p>
           <input
-            type="p"
+            style={{ color: 'black', padding: '4px' }}
             value={chestReward!}
             onChange={(e) => setChestReward(e.target.value)}
           />
@@ -675,8 +676,9 @@ const Game = () => {
 
         <button
           onClick={handleClickInitialize}
+          className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'
         >
-          Initialize
+          Create Game
         </button>
       </div>
     );
@@ -686,7 +688,9 @@ const Game = () => {
 
   const renderGameBoard = () => {
     return (
-      <div>
+      <div
+        className='flex flex-col justify-center items-center space-y-2'
+      >
         <img
           src={activeImage ? `/hangman${activeImage}.png` : "/hangman0.png"}
           alt="hangman"
@@ -694,33 +698,17 @@ const Game = () => {
         />
         {secretWordOnChain?.length > 0 && (
           <div
-            style={{
-              fontSize: "2rem",
-              fontFamily: "monospace",
-              display: "div",
-              flexDirection: "column",
-              gap: "0px",
-            }}
+            className='flex flex-row justify-center items-center space-y-2'
           >
             <div
-              style={{
-                fontSize: "2rem",
-                fontFamily: "monospace",
-                display: "div",
-                flexDirection: "row",
-                gap: "10px",
-                height: "fit-content",
-              }}
+              className='flex flex-row justify-center items-center'
             >
               {correctLetters.map((letter, index) => {
                 return (
                   <div
                     key={index}
-                    style={{
-                      // pDecoration: 'underline',
-                      // pDecorationColor: 'green',
-                      
-                    }}
+                    // font size 2xl
+                    className='m-2 text-6xl'
                   >
                     {/* map out each letter with a space in between, do not put space after last letter */}
                     {index < correctLetters?.length - 1 ? (
@@ -732,22 +720,12 @@ const Game = () => {
                 );
               })}
             </div>
-            <div
-              style={{
-                fontSize: "2rem",
-                fontFamily: "monospace",
-                display: "div",
-                flexDirection: "row",
-                gap: "10px",
-              }}
-            >
+            <div>
               {blanks.map((letter, index) => {
                 return (
                   <div
                     key={index}
-                    style={{
-                
-                    }}
+                    className='flex flex-row justify-center items-center space-y-2'
                   >
                     {letter}
                   </div>
@@ -765,7 +743,9 @@ const Game = () => {
               authorityOnChain.toString().slice(-4)}
           </p>
           {maxAttemptsOnChain > 0 ? (
-            <div>
+            <div
+              className='flex flex-col justify-center items-center space-y-2'
+            >
               <p>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</p>
               <p>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</p>
               <p>Attempts Left: {maxAttemptsOnChain}</p>
@@ -774,7 +754,9 @@ const Game = () => {
             <p>Game Limit Reached</p>
           )}
           {playerIndexInGameList != null ? (
-            <div>
+            <div
+              className='flex flex-col justify-center items-center space-y-2'
+            >
               <p>Guesses left: {guessesLeft}</p>
               <p>Guessed letters: {
                   // string of correct letters seperated by a space != _ and incorrectGuesses
@@ -785,13 +767,19 @@ const Game = () => {
               {/* display correct letters seperated by a space */}
               {/* display the correct letters underlined */}
               <p>Correct letters: {correctLetters}</p>
-              <div>
+              <div
+                className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
+              >
+                <p
+                  className='underline'
+                >
+                  Guess a letter
+                </p>
                 <input
                   type="p"
-                  // limit to one character
+                  className='text-black p-2 w-10 text-center'
                   maxLength={1}
                   value={letterToGuess}
-                  placeholder="Guess a letter"
                   onChange={(event) => {
                     if (!guessedLetters?.includes(event.target.value)) {
                       setLetterToGuess(event.target.value);
@@ -800,12 +788,7 @@ const Game = () => {
                 />
                 <button
                   onClick={() => handleClickRight(letterToGuess)}
-                  // if 'enter' is pressed, guess the letter
-                  // onKeyPress={(event) => {
-                  //     if (event.key === 'Enter') {
-                  //         guessLetter(letterToGuess);
-                  //     }
-                  // }}
+                  className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'
                 >
                   Guess
                 </button>
@@ -1025,29 +1008,49 @@ const Game = () => {
   return (
     <div>
       {!loading && (
-        <>
-          <div>
-            <div>
-              <div>
-                <p>Create New Game?</p>
-                <button
-                  onClick={handleClickCreateGame}
-                >
-                  {creatingNewGame ? "Cancel" : "Create"}
-                </button>
-                <button onClick={handleClickGetData}>
-                  Get Data
-                </button>
-              </div>
+            <div
+              className='flex flex-col justify-center items-center space-y-2'
+            >
               {listOfCreators && renderCreatorSelection()}
               {creatingNewGame && !selectedCreator && renderCreateGame()}
               <h1>{message}</h1>
               {/* <p fontSize="6xl">{playerPosition}</p> */}
               <div>
-                {/* create a form for a user to create game */}
-                {/* form needs to have a password, entry fee, max attempts, and chest reward */}
+                {!selectedCreator && selectedCreator != "" && (
+                  <div
+                    className='flex flex-col justify-center items-center space-y-2'
+                  >
+                    <p>Create New Game?</p>
+                    <div
+                      className='flex flex-row justify-center items-center space-x-2'
+                    >
+                      <button
+                        onClick={handleClickCreateGame}
+                        className='border-2 border-white p-2'
+                      >
+                        {creatingNewGame ? "Cancel" : "Create"}
+                      </button>
+                      <button 
+                        onClick={handleClickGetData}
+                        // give a white border
+                        className='border-2 border-white p-2'
+                      >
+                        Get Data
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {!loading && chestVaultAccount && selectedCreator != null && (
-                  <>{renderGameBoard()}</>
+                  <div className='flex flex-col justify-center items-center'>
+                    <button 
+                      onClick={handleClickGetData}
+                      // give a white border
+                      className='border-2 border-white p-2'
+                    >
+                      Get Data
+                    </button>
+                    {renderGameBoard()}
+                  </div>
                 )}
               </div>
 
@@ -1071,8 +1074,6 @@ const Game = () => {
                   </button>
                 )}
             </div>
-          </div>
-        </>
       )}
     </div>
   );

@@ -53,6 +53,9 @@
     z-index: 3;
 }
 
-/* Path: components/constants/styles/HorizontalImageCard.module.css */
+.overlay {
+    /* font color red */
+    color: #ff0000;
+}
 
 

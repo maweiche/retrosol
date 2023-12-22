@@ -17,6 +17,19 @@ body {
     rgba(49, 18, 93, 0.4)); */
 }
 
+h1 {
+  font-family: 'Press Start 2P', sans-serif;
+}
+
+h3 {
+  font-family: 'Press Start 2P', sans-serif;
+  color: red;
+}
+
+p, button {
+  font-family: 'Press Start 2P', sans-serif;
+}
+
 a {
   color: inherit;
   text-decoration: none;

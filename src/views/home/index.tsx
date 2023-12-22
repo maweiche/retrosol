@@ -74,7 +74,7 @@ export const HomeView: FC = ({ }) => {
       <Landing />
       {/* <Overview /> */}
       <Showcase />
-      <Faq />
+      {/* <Faq /> */}
     </div>
   );
 };

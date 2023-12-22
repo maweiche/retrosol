@@ -47,3 +47,8 @@
     left: 0;
     z-index: 2;
 }
+
+.comingSoon {
+    /* font color red */
+    color: #ff0000;
+}
