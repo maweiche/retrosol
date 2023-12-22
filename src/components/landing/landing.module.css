@@ -7,3 +7,24 @@
     z-index: 2;
     opacity: 0.6;
 }
+
+.flashingTitle {
+    font-size: 72px;
+    font-weight: 700;
+    text-align: center;
+    /* font-family: 'Bree Serif', serif; */
+    font-family: 'Pixelify Sans', sans-serif;
+    width: fit-content;
+    white-space: nowrap;
+    color: #e86800ca;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #0ff,
+    0 0 70px #0ff, 0 0 80px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
+    animation: flicker 1.5s infinite alternate;
+    z-index: 99;
+    display: flex;
+    /* display in middle of parent without making position absolute */
+    padding-left: 100%;
+    padding-top: 20%;
+    transform: translate(-50%, -50%);
+    
+}

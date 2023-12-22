@@ -20,7 +20,7 @@ export default function Landing() {
             <div className={styles.overlay}>
                 <CardContainer>
                     <FlashingHeader>
-                        <h1>Retro Sol</h1>
+                        <h1 className={styles.flashingTitle}>Retro Sol</h1>
                     </FlashingHeader>                    
                 </CardContainer>
             </div>
