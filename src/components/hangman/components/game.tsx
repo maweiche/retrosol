@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { useDebugValue } from "react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
@@ -161,6 +161,7 @@ const Game = () => {
         }),
       );
       setGameDataAccount(game_data_decoded);
+      console.log("game_data_decoded", game_data_decoded.allCreators.toString());
     }
 
     if (selectedCreator) {
@@ -185,7 +186,7 @@ const Game = () => {
           "ChestVaultAccount",
           treasure_account_info?.data,
         );
-        // console.log("chest vault password", chest_vault_account?.password);
+        console.log("chest vault password", chest_vault_account?.password);
         // console.log("chest vault reward", chest_vault_account?.chestReward);
         // console.log(
         //   "chest vault max attempts",
@@ -215,7 +216,7 @@ const Game = () => {
         setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
         // console.log(chest_vault_account?.chestReward);
         // console.log("secret_word_array", secret_word_array);
-        // console.log("players", chest_vault_account?.players);
+        // console.log("players", chest_vault_account?.players[0].toString());
         const list_of_players = chest_vault_account?.players;
         setListOfPlayers(chest_vault_account?.players);
         // find the index of the player in the players array
@@ -225,18 +226,20 @@ const Game = () => {
             return player.player.toString() === publicKey?.toString();
           });
           // console.log("player_index", player_index);
-          if (player_index > -1) {
+          if (player_index != null) {
             setPlayerIndexInGameList(player_index);
-            if (list_of_players[player_index].incorrectGuesses < 6) {
+            // console.log("player_index", player_index);
+            // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
+            if (list_of_players[player_index].incorrectGuesses.length < 6) {
               // console.log("player info", list_of_players[player_index]);
-              // setCorrectLetters(list_of_players[player_index].correctLetters)
               list_of_players[player_index].correctLetters.forEach((letter: string) => {
                 if (letter != "_") {
                   correctLetters.push(letter);
                 }
               });
+              // console.log("correctLetters", correctLetters);
               setGuessesLeft(
-                6 - list_of_players[player_index].incorrectGuesses,
+                6 - list_of_players[player_index].incorrectGuesses.length,
               );
               // console.log("guessesLeft", 6 - list_of_players[player_index].incorrectGuesses);
               setIncorrectGuesses(
@@ -246,16 +249,18 @@ const Game = () => {
               setCorrectLetters(
                 list_of_players[player_index].correctLetters,
               )
-              // console.log("correctLetters", list_of_players[player_index].correctLetters);
+              console.log("correctLetters", list_of_players[player_index].correctLetters);
               setWinner(
                 list_of_players[player_index].isWinner,
               )
+              guessedLetters.push(...list_of_players[player_index].correctLetters, ...list_of_players[player_index].incorrectGuesses);
+
               // advance the active image to the number of incorrect guesses
               // if the player has 0 incorrect guesses, the active image should be 0
-              if (list_of_players[player_index].incorrectGuesses == 0) {
+              if (list_of_players[player_index].incorrectGuesses.length == 0) {
                 setActiveImage(0);
               } else {
-                setActiveImage(list_of_players[player_index].incorrectGuesses);
+                setActiveImage(list_of_players[player_index].incorrectGuesses.length);
               }
             }
           }
@@ -742,13 +747,15 @@ const Game = () => {
               "..." +
               authorityOnChain.toString().slice(-4)}
           </p>
+          <p>Game Attempts Left: {maxAttemptsOnChain}</p>
           {maxAttemptsOnChain > 0 ? (
             <div
-              className='flex flex-col justify-center items-center space-y-2'
+              className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2 m-2'
             >
+              
               <p>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</p>
               <p>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</p>
-              <p>Attempts Left: {maxAttemptsOnChain}</p>
+              
             </div>
           ) : (
             <p>Game Limit Reached</p>
@@ -922,7 +929,7 @@ const Game = () => {
           );
           setCorrectLetters(decoded.players[player_index].correctLetters);
           setIncorrectGuesses(decoded.players[player_index].incorrectGuesses);
-          setGuessedLetters(decoded.players[player_index].guessedLetters);
+          guessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
           setWinner(decoded.players[player_index].isWinner);
         }
         const secret_word_array = decoded.password.split(process.env.NEXT_PUBLIC_SPLIT_KEY);

@@ -8,6 +8,7 @@ import NetworkSwitcher from './NetworkSwitcher';
 import NavElement from './nav-element';
 import { RequestAirdrop } from './RequestAirdrop';
 
+
 const WalletMultiButtonDynamic = dynamic(
   async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
   { ssr: false }
@@ -16,6 +17,8 @@ const WalletMultiButtonDynamic = dynamic(
 export const AppBar: React.FC = () => {
   const { autoConnect, setAutoConnect } = useAutoConnect();
   const [isNavOpen, setIsNavOpen] = useState(false);
+
+  
   return (
     <div>
       {/* NavBar / Header */}
@@ -79,12 +82,15 @@ export const AppBar: React.FC = () => {
           <ul tabIndex={0} className="p-2 shadow menu dropdown-content bg-base-100 rounded-box sm:w-52">
             <li>
               <div className="form-control bg-opacity-100">
-                <label className="cursor-pointer label">
+                {/* <label className="cursor-pointer label">
                   <a>Autoconnect</a>
                   <input type="checkbox" checked={autoConnect} onChange={(e) => setAutoConnect(e.target.checked)} className="toggle" />
-                </label>
-                <NetworkSwitcher />
+                </label> */}
+                {/* <NetworkSwitcher /> */}
                 <RequestAirdrop />
+                {/* get the current network (mainnet or devnet) of connected wallet and display current network of connected wallet */}
+                <p className="text-center text-xs text-neutral-content">Make sure your connected wallet is set to Devnet</p>
+                
               </div>
             </li>
           </ul>
