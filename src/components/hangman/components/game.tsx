@@ -913,8 +913,8 @@ const Game = () => {
           setCorrectAnswer(true);
           notify({ type: 'success', message: `Correct!`, description: 'Correct!' });
         } else if (
-          player_vector[player_index].incorrectGuesses >
-          current_incorrect_guesses
+          player_vector[player_index].incorrectGuesses.length >
+          current_incorrect_guesses.length
         ) {
           setIncorrectAnswer(true);
           setGuessesLeft(guessesLeft - 1);
@@ -946,7 +946,7 @@ const Game = () => {
           guessesLeft - 1;
         }
         setPlayerPositionOnChain(decoded.playerPosition);
-        notify({ type: 'success', message: 'Chest Vault Account updated!', description: 'Success!' });
+        // notify({ type: 'success', message: 'Chest Vault Account updated!', description: 'Success!' });
         // chestBump(decoded.chestReward)
       },
     );
@@ -1052,9 +1052,12 @@ const Game = () => {
               </div>
 
               {winner && (
-                <div>
-                  <p>You won!</p>
+                <div
+                  className='flex flex-col justify-center items-center space-y-2'
+                >
+                  <h1>You won!</h1>
                   <button
+                    className='border-2 border-white p-2 bg-green-500 hover:bg-green-700'
                     onClick={handleClickClaimPrize}
                   >
                     Claim Prize
