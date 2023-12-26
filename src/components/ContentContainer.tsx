@@ -40,6 +40,12 @@ export const ContentContainer: React.FC<Props> = ({ children }) => {
             href="/hangman"
           />
           </li>
+          <li>
+          <NavElement
+            label="HangmanWithId"
+            href="/hangmanId"
+          />
+          </li>
         </ul>
       </div>
     </div>
