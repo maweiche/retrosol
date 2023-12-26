@@ -1,573 +1,573 @@
 export type HangmanContract = {
-  version: "0.1.0";
-  name: "hangman_contract";
-  instructions: [
+  "version": "0.1.0",
+  "name": "hangman_contract",
+  "instructions": [
     {
-      name: "initializeLevelOne";
-      accounts: [
+      "name": "initializeLevelOne",
+      "accounts": [
         {
-          name: "newGameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "newGameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
         {
-          name: "chestReward";
-          type: "u64";
-        },
-        {
-          name: "password";
-          type: "string";
+          "name": "chestReward",
+          "type": "u64"
         },
         {
-          name: "maxAttempts";
-          type: "u8";
+          "name": "password",
+          "type": "string"
         },
         {
-          name: "entryFee";
-          type: "u64";
+          "name": "maxAttempts",
+          "type": "u8"
         },
-      ];
+        {
+          "name": "entryFee",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "playerStartsGame";
-      accounts: [
+      "name": "playerStartsGame",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
-      name: "getChestReward";
-      accounts: [
+      "name": "getChestReward",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player";
-          isMut: true;
-          isSigner: true;
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
-      name: "addCorrectLetter";
-      accounts: [
+      "name": "addCorrectLetter",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player";
-          isMut: true;
-          isSigner: true;
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
         {
-          name: "letter";
-          type: "string";
+          "name": "letter",
+          "type": "string"
         },
         {
-          name: "indexes";
-          type: "bytes";
-        },
-      ];
+          "name": "indexes",
+          "type": "bytes"
+        }
+      ]
     },
     {
-      name: "addIncorrectLetter";
-      accounts: [
+      "name": "addIncorrectLetter",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player";
-          isMut: true;
-          isSigner: true;
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
         {
-          name: "letter";
-          type: "string";
-        },
-      ];
+          "name": "letter",
+          "type": "string"
+        }
+      ]
     },
     {
-      name: "withdraw";
-      accounts: [
+      "name": "withdraw",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-  ];
-  accounts: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
     {
-      name: "GameDataAccount";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "GameDataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "allCreators";
-            type: {
-              vec: "publicKey";
-            };
-          },
-        ];
-      };
+            "name": "allCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "ChestVaultAccount";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "ChestVaultAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "creator";
-            type: "publicKey";
+            "name": "creator",
+            "type": "publicKey"
           },
           {
-            name: "chestReward";
-            type: "u64";
+            "name": "chestReward",
+            "type": "u64"
           },
           {
-            name: "password";
-            type: "string";
+            "name": "password",
+            "type": "string"
           },
           {
-            name: "maxAttemptsLeft";
-            type: "u8";
+            "name": "maxAttemptsLeft",
+            "type": "u8"
           },
           {
-            name: "entryFee";
-            type: "u64";
+            "name": "entryFee",
+            "type": "u64"
           },
           {
-            name: "players";
-            type: {
-              vec: {
-                defined: "GameRecord";
-              };
-            };
-          },
-        ];
-      };
-    },
-  ];
-  types: [
+            "name": "players",
+            "type": {
+              "vec": {
+                "defined": "GameRecord"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
     {
-      name: "GameRecord";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "GameRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "player";
-            type: "publicKey";
+            "name": "player",
+            "type": "publicKey"
           },
           {
-            name: "playerScore";
-            type: "u8";
+            "name": "playerScore",
+            "type": "u8"
           },
           {
-            name: "playerPosition";
-            type: "u8";
+            "name": "playerPosition",
+            "type": "u8"
           },
           {
-            name: "incorrectGuesses";
-            type: {
-              vec: "string";
-            };
+            "name": "incorrectGuesses",
+            "type": {
+              "vec": "string"
+            }
           },
           {
-            name: "correctLetters";
-            type: {
-              vec: "string";
-            };
+            "name": "correctLetters",
+            "type": {
+              "vec": "string"
+            }
           },
           {
-            name: "isWinner";
-            type: "bool";
-          },
-        ];
-      };
-    },
-  ];
-  metadata: {
-    address: "GsMHDbJU6hZx3yF2adbsyrC5aBcjw4XbewJQbLKwtrBe";
-  };
-};
+            "name": "isWinner",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "89qhdKLthboXkjWT8icXditnmnSZAxCtqRXcAEm8Kb5i"
+  }
+}
 
 export const IDL: HangmanContract = {
-  version: "0.1.0",
-  name: "hangman_contract",
-  instructions: [
+  "version": "0.1.0",
+  "name": "hangman_contract",
+  "instructions": [
     {
-      name: "initializeLevelOne",
-      accounts: [
+      "name": "initializeLevelOne",
+      "accounts": [
         {
-          name: "newGameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "newGameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "chestReward",
-          type: "u64",
+          "name": "chestReward",
+          "type": "u64"
         },
         {
-          name: "password",
-          type: "string",
+          "name": "password",
+          "type": "string"
         },
         {
-          name: "maxAttempts",
-          type: "u8",
+          "name": "maxAttempts",
+          "type": "u8"
         },
         {
-          name: "entryFee",
-          type: "u64",
-        },
-      ],
+          "name": "entryFee",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "playerStartsGame",
-      accounts: [
+      "name": "playerStartsGame",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
+      "args": []
     },
     {
-      name: "getChestReward",
-      accounts: [
+      "name": "getChestReward",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player",
-          isMut: true,
-          isSigner: true,
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
+      "args": []
     },
     {
-      name: "addCorrectLetter",
-      accounts: [
+      "name": "addCorrectLetter",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player",
-          isMut: true,
-          isSigner: true,
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "letter",
-          type: "string",
+          "name": "letter",
+          "type": "string"
         },
         {
-          name: "indexes",
-          type: "bytes",
-        },
-      ],
+          "name": "indexes",
+          "type": "bytes"
+        }
+      ]
     },
     {
-      name: "addIncorrectLetter",
-      accounts: [
+      "name": "addIncorrectLetter",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "player",
-          isMut: true,
-          isSigner: true,
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "letter",
-          type: "string",
-        },
-      ],
+          "name": "letter",
+          "type": "string"
+        }
+      ]
     },
     {
-      name: "withdraw",
-      accounts: [
+      "name": "withdraw",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
-    },
+      "args": []
+    }
   ],
-  accounts: [
+  "accounts": [
     {
-      name: "GameDataAccount",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GameDataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "allCreators",
-            type: {
-              vec: "publicKey",
-            },
-          },
-        ],
-      },
+            "name": "allCreators",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "ChestVaultAccount",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "ChestVaultAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "creator",
-            type: "publicKey",
+            "name": "creator",
+            "type": "publicKey"
           },
           {
-            name: "chestReward",
-            type: "u64",
+            "name": "chestReward",
+            "type": "u64"
           },
           {
-            name: "password",
-            type: "string",
+            "name": "password",
+            "type": "string"
           },
           {
-            name: "maxAttemptsLeft",
-            type: "u8",
+            "name": "maxAttemptsLeft",
+            "type": "u8"
           },
           {
-            name: "entryFee",
-            type: "u64",
+            "name": "entryFee",
+            "type": "u64"
           },
           {
-            name: "players",
-            type: {
-              vec: {
-                defined: "GameRecord",
-              },
-            },
-          },
-        ],
-      },
-    },
+            "name": "players",
+            "type": {
+              "vec": {
+                "defined": "GameRecord"
+              }
+            }
+          }
+        ]
+      }
+    }
   ],
-  types: [
+  "types": [
     {
-      name: "GameRecord",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GameRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "player",
-            type: "publicKey",
+            "name": "player",
+            "type": "publicKey"
           },
           {
-            name: "playerScore",
-            type: "u8",
+            "name": "playerScore",
+            "type": "u8"
           },
           {
-            name: "playerPosition",
-            type: "u8",
+            "name": "playerPosition",
+            "type": "u8"
           },
           {
-            name: "incorrectGuesses",
-            type: {
-              vec: "string",
-            },
+            "name": "incorrectGuesses",
+            "type": {
+              "vec": "string"
+            }
           },
           {
-            name: "correctLetters",
-            type: {
-              vec: "string",
-            },
+            "name": "correctLetters",
+            "type": {
+              "vec": "string"
+            }
           },
           {
-            name: "isWinner",
-            type: "bool",
-          },
-        ],
-      },
-    },
+            "name": "isWinner",
+            "type": "bool"
+          }
+        ]
+      }
+    }
   ],
-  metadata: {
-    address: "GsMHDbJU6hZx3yF2adbsyrC5aBcjw4XbewJQbLKwtrBe",
-  },
-};
+  "metadata": {
+    "address": "89qhdKLthboXkjWT8icXditnmnSZAxCtqRXcAEm8Kb5i"
+  }
+}

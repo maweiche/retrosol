@@ -136,9 +136,10 @@ const Game = () => {
     setLoading(true);
     const main_key = new PublicKey(
       "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
+      // "HZxkqBTnXtAYoFTg2puo9KyiNN42E8Sd2Kh1jq3vT29u"
     );
     let data = PublicKey.findProgramAddressSync(
-      [Buffer.from("hangmanData"), main_key.toBuffer()],
+      [Buffer.from("hangmanData")],
       program.programId,
     );
     // console.log("data", data);
@@ -225,12 +226,12 @@ const Game = () => {
           const player_index = list_of_players.findIndex((player: { player: { toString: () => string; }; }) => {
             return player.player.toString() === publicKey?.toString();
           });
-          // console.log("player_index", player_index);
-          if (player_index != null) {
+          console.log("player_index", player_index);
+          if (player_index != null && player_index != undefined && player_index >= 0) {
             setPlayerIndexInGameList(player_index);
             // console.log("player_index", player_index);
             // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
-            if (list_of_players[player_index].incorrectGuesses.length < 6) {
+            if (list_of_players[player_index].incorrectGuesses?.length < 6) {
               // console.log("player info", list_of_players[player_index]);
               list_of_players[player_index].correctLetters.forEach((letter: string) => {
                 if (letter != "_") {
@@ -307,7 +308,18 @@ const Game = () => {
       );
       // console.log("entry_fee_as_bn", entry_fee_as_bn.toString());
       const max_attempts = parseInt(maxAttempts!);
-
+      console.log('publicKey', publicKey?.toString() as any)
+      const newChestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
+        program.programId
+      );
+      const [newGameDataAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("hangmanData")
+        ],
+        program.programId
+      )
+      console.log("newChestVaultAccount", newChestVaultAccount[0].toString());
       const transaction = await program.methods
         .initializeLevelOne(
           reward_as_bn,
@@ -316,8 +328,8 @@ const Game = () => {
           entry_fee_as_bn,
         )
         .accounts({
-          newGameDataAccount: globalLevel1GameDataAccount as any,
-          chestVaultAccount: chestVaultAccount as any,
+          newGameDataAccount: newGameDataAccount as any,
+          chestVaultAccount: newChestVaultAccount[0] as any,
           signer: publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
         })
@@ -613,7 +625,7 @@ const Game = () => {
   async function getGameTreasureAccount() {
     const selected_creator = new PublicKey(selectedCreator as any);
     const global_data = await PublicKey.findProgramAddressSync(
-      [Buffer.from("hangmanData"), selected_creator.toBuffer()],
+      [Buffer.from("hangmanData")],
       program.programId,
     );
 
@@ -758,63 +770,69 @@ const Game = () => {
               
             </div>
           ) : (
-            <p>Game Limit Reached</p>
+            <p
+              className='flex flex-col justify-center items-center space-y-2 text-red-500'
+            >Game Limit Reached</p>
           )}
-          {playerIndexInGameList != null ? (
-            <div
-              className='flex flex-col justify-center items-center space-y-2'
-            >
-              <p>Guesses left: {guessesLeft}</p>
-              <p>Guessed letters: {
-                  // string of correct letters seperated by a space != _ and incorrectGuesses
-                  guessedLetters?.filter((letter) => {
-                    return letter != "_" && letter != incorrectGuesses;
-                  })
-                }</p>
-              {/* display correct letters seperated by a space */}
-              {/* display the correct letters underlined */}
-              <p>Correct letters: {correctLetters}</p>
-              <div
-                className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
-              >
-                <p
-                  className='underline'
+          {/* {maxAttemptsOnChain > 0 && (
+            <> */}
+              {playerIndexInGameList >= 0 ? (
+                <div
+                  className='flex flex-col justify-center items-center space-y-2'
                 >
-                  Guess a letter
-                </p>
-                <input
-                  type="p"
-                  className='text-black p-2 w-10 text-center'
-                  maxLength={1}
-                  value={letterToGuess}
-                  onChange={(event) => {
-                    if (!guessedLetters?.includes(event.target.value)) {
-                      setLetterToGuess(event.target.value);
-                    }
-                  }}
-                />
-                <button
-                  onClick={() => handleClickRight(letterToGuess)}
-                  className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'
+                  <p>Guesses left: {guessesLeft}</p>
+                  <p>Guessed letters: {
+                      // string of correct letters seperated by a space != _ and incorrectGuesses
+                      guessedLetters?.filter((letter) => {
+                        return letter != "_" && letter != incorrectGuesses;
+                      })
+                    }</p>
+                  {/* display correct letters seperated by a space */}
+                  {/* display the correct letters underlined */}
+                  <p>Correct letters: {correctLetters}</p>
+                  <div
+                    className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
+                  >
+                    <p
+                      className='underline'
+                    >
+                      Guess a letter
+                    </p>
+                    <input
+                      type="p"
+                      className='text-black p-2 w-10 text-center'
+                      maxLength={1}
+                      value={letterToGuess}
+                      onChange={(event) => {
+                        if (!guessedLetters?.includes(event.target.value)) {
+                          setLetterToGuess(event.target.value);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => handleClickRight(letterToGuess)}
+                      className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'
+                    >
+                      Guess
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2'
                 >
-                  Guess
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div
-              className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2'
-            >
-              <button
-                // isLoading={loadingInitialize}
-                onClick={handleClickPlayerStartGame}
-              >
-                Start Game
-              </button>
-            </div>
-          )}
+                  <button
+                    // isLoading={loadingInitialize}
+                    onClick={handleClickPlayerStartGame}
+                  >
+                    Start Game
+                  </button>
+                </div>
+              )}
+            {/* </>
+          )} */}
+          
         </div>
-        <div></div>
       </div>
     );
   };
@@ -929,7 +947,15 @@ const Game = () => {
           );
           setCorrectLetters(decoded.players[player_index].correctLetters);
           setIncorrectGuesses(decoded.players[player_index].incorrectGuesses);
-          guessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
+          // guessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
+          // setGuessedLetters to the correct letters and incorrect guesses
+          console.log("decoded.players[player_index].correctLetters", decoded.players[player_index].correctLetters);
+          console.log("decoded.players[player_index].incorrectGuesses", decoded.players[player_index].incorrectGuesses);
+          let newGuessedLetters = [];
+          newGuessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
+          setGuessedLetters(
+            newGuessedLetters,
+          );
           setWinner(decoded.players[player_index].isWinner);
         }
         const secret_word_array = decoded.password.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
@@ -982,7 +1008,7 @@ const Game = () => {
           "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
         );
         let data = PublicKey.findProgramAddressSync(
-          [Buffer.from("hangmanData"), main_key.toBuffer()],
+          [Buffer.from("hangmanData")],
           program.programId,
         );
         console.log("data*****", data);
@@ -997,7 +1023,7 @@ const Game = () => {
         });
       } else {
         let data = PublicKey.findProgramAddressSync(
-          [Buffer.from("hangmanData"), creator_key.toBuffer()],
+          [Buffer.from("hangmanData")],
           program.programId,
         );
         // console.log("data", data);

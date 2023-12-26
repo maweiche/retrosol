@@ -26,7 +26,7 @@ setProvider(provider);
 //   const programId = new PublicKey("2F2K73Sj1ygx4N9ptCegrxEDvGNLCndrsCdmUbcHej3c")
 
 //Hangman Program ID
-const programId = new PublicKey("GsMHDbJU6hZx3yF2adbsyrC5aBcjw4XbewJQbLKwtrBe");
+const programId = new PublicKey("89qhdKLthboXkjWT8icXditnmnSZAxCtqRXcAEm8Kb5i");
 const signId = new PublicKey("CkqtYErfRwYUen6ojKcrQWAJ19GjzWc7AEbANsRs2dxD");
 
 export const program = new Program(
@@ -36,6 +36,6 @@ export const program = new Program(
 
 // GameDataAccount PDA
 export const [globalLevel1GameDataAccount] = PublicKey.findProgramAddressSync(
-  [Buffer.from("hangmanData"), signId.toBuffer()], // seed
+  [Buffer.from("hangmanData")], // seed
   programId,
 );
