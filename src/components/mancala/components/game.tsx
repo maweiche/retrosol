@@ -20,16 +20,18 @@ const Game = () => {
     const [loading, setLoading] = useState(false);
     const [gameDataAccount, setGameDataAccount] = useState<PublicKey>();
     const [gameState, setGameState] = useState(
-        [0, 4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4]
+        []
     );
 
     const [listOfCreators, setListOfCreators] = useState([
         publicKey?.toBase58() as string
     ]);
     const [selectedCreator, setSelectedCreator] = useState<String>();
+    const [chestVaultAccountFetched, setChestVaultAccountFetched] = useState<PublicKey>();
+    const [hookedGame, setHookedGame] = useState<boolean>(false);
 
     const [entryFee, setEntryFee] = useState(0);
-    const [playerTurn, setPlayerTurn] = useState(1);
+    const [playerTurn, setPlayerTurn] = useState('');
     const [selectedPit, setSelectedPit] = useState(-1);
     const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState('');
@@ -104,6 +106,8 @@ const Game = () => {
               program.programId,
             );
 
+            setChestVaultAccountFetched(treasure[0]);
+
             const treasure_account_info = await connection.getAccountInfo(
                 treasure[0],
             );
@@ -114,27 +118,6 @@ const Game = () => {
                     "ChestVaultAccount",
                     treasure_account_info?.data,
                 );
-                console.log(decoded);
-
-                // pub struct ChestVaultAccount{
-                //     pub authority: Pubkey,
-                //     pub chest_reward: u64,
-                //     pub password: String,
-                //     pub entry_fee: u64,
-                //     pub score_sheet: GameRecord,
-                //     pub game_board: [u8; 14],
-                // }
-
-                // pub struct GameRecord {
-                //     pub player_one: Pubkey,
-                //     pub player_one_score: u8,
-                //     pub player_two: Pubkey,
-                //     pub player_two_score: u8,
-                //     pub total_moves: u8,
-                //     pub current_move: Pubkey,
-                //     pub game_over: bool,
-                //     pub winner: Pubkey,
-                // }
 
                 console.log("entry fee", decoded.entryFee.toString());
                 console.log("player one", decoded.scoreSheet.playerOne.toString());
@@ -197,8 +180,11 @@ const Game = () => {
     // makeMove
     // withdraw
 
-    async function initializeGameData(entry_fee: number) {
-        const entry_fee_as_bn = new anchor.BN(entry_fee);
+    async function initializeGameData(entry_fee: string) {
+        const entry_fee_as_bn = new anchor.BN(
+            // parse entryFee as a float and convert to lamports
+            parseFloat(entry_fee) * anchor.web3.LAMPORTS_PER_SOL,
+        );
         const newChestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
             [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
             program.programId
@@ -231,8 +217,9 @@ const Game = () => {
     }
 
     async function playerJoinsGame() {
+        const creator_pubkey = new PublicKey(selectedCreator);
         const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
-            [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
             program.programId
         );
         console.log("chest vault account", chestVaultAccount[0].toString());
@@ -255,7 +242,67 @@ const Game = () => {
             signature: txHash,
         });
 
-        getGameAccountInfo();
+        setHookedGame(true);
+        await getGameState();
+    }
+
+    async function makeMove(selectedPit: number) {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+        console.log("chest vault account", chestVaultAccount[0].toString());
+        const transaction = await program.methods
+            .makeMove(selectedPit)
+            .accounts({
+                chestVaultAccount: chestVaultAccount[0] as PublicKey,
+                signer: publicKey as PublicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+        setSelectedPit(-1);
+        await getGameState();
+    }
+
+    async function withdraw() {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+        console.log("chest vault account", chestVaultAccount[0].toString());
+        const transaction = await program.methods
+            .withdraw()
+            .accounts({
+                gameDataAccount: globalLevel1GameDataAccount as PublicKey,
+                chestVaultAccount: chestVaultAccount[0] as PublicKey,
+                signer: publicKey as PublicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+
+        await getGameState();
     }
 
     const renderGameBoard = () => {
@@ -269,8 +316,9 @@ const Game = () => {
         */}
         return (
             <div className="flex flex-col items-center">
-                <div className="flex flex-row items-center">
+                <div className="flex flex-col items-center">
                     <p>Entry Fee: {entryFee ? entryFee : '???'}</p>
+                    <p>Player Turn: {playerTurn === playerOne ? `${playerOne.slice(0,4)}...${playerOne.slice(-4)}` : `${playerTwo.slice(0,4)}...${playerTwo.slice(-4)}`}</p>
                 </div>
                 <div className="flex flex-row items-center gap-20">
                     <p>
@@ -293,7 +341,12 @@ const Game = () => {
                     </div>          
                     <div className="flex flex-col items-center">
                         <div className="flex justify-around"> {/* Player 2's pits */}
-                            {gameState.slice(8, 14).map((pit, index) => (
+                            {/* 
+                                map the gameState.slice(8,14) but in reverse 
+                                the gameState indexes should be:
+                                13, 12, 11, 10, 9, 8
+                            */}
+                            {/* {gameState.slice(8, 14).map((pit, index) => (
                                 <div 
                                     key={index} 
                                     className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
@@ -301,38 +354,193 @@ const Game = () => {
                                         borderColor: index + 8 === selectedPit ? "#66ff00" : "white"
                                     }}
                                     onClick={() => {
-                                        if (playerTurn === 2) {
+                                        if (playerTurn === playerTwo) {
                                             setSelectedPit(index + 8),
-                                            console.log(selectedPit)
+                                            console.log(index + 8)
                                         }
                                     }}
-                                    
+                                    aria-disabled={playerTurn === playerTwo ? false : true}
                                 >
-                                    {/* display the corresponding value by matching the index with the key in game_board_pieces */}
                                     {pit}
                                 </div>
-                            ))}
+                            ))} */}
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 13 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(13)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[13]}
+                                
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 12 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(12)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[12]}
+                                
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 11 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(11)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[11]}
+                                
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 10 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(10)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[10]}
+                                
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 9 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(9)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[9]}
+                            
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 8 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerTwo) {
+                                        setSelectedPit(8)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[8]}
+                            
+                            </div>
                         </div>
-                        <div className="flex justify-around"> {/* Player 1's pits */}
-                            {gameState.slice(1, 7).map((pit, index) => (
-                                <div 
-                                    key={index} 
-                                    className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
-                                    style={{
-                                        // if the pit is selected, change the border color to lime green
-                                        borderColor: index + 1 === selectedPit ? "#66ff00" : "white"
-                                    }}
-                                    onClick={() => {
-                                        if (playerTurn === 1) {
-                                            setSelectedPit(index + 1),
-                                            console.log(selectedPit)
-                                        }
-                                    }}
-                                    aria-disabled={playerTurn === 2}
-                                >
-                                    {pit}
-                                </div>
-                            ))}
+                        <div className="flex justify-around"> 
+                            <div 
+                                key={gameState[1]} 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 1 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(1)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[1]}
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 2 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(2)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[2]}
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 3 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(3)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[3]}
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 4 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(4)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[4]}
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 5 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(5)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[5]}
+                            </div>
+                            <div 
+                                className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
+                                style={{
+                                    borderColor: 6 === selectedPit ? "#66ff00" : "white"
+                                }}
+                                onClick={() => {
+                                    if (playerTurn === playerOne) {
+                                        setSelectedPit(6)
+                                    }
+                                }}
+                                // aria-disabled={playerTurn === playerTwo ? false : true}
+                            >
+                                {gameState[6]}
+                            </div>
                         </div>
                     </div>
                     <div className="w-16 h-24 border-2 border-white flex items-center justify-center m-4">
@@ -370,6 +578,41 @@ const Game = () => {
     }, [connection, globalLevel1GameDataAccount, program]);
 
     useEffect(() => {
+        if (!chestVaultAccountFetched) return;
+        console.log('chestVault hooked')
+        const subscriptionId = connection.onAccountChange(
+            chestVaultAccountFetched as PublicKey,
+            (accountInfo) => {
+                const decoded = program.coder.accounts.decode(
+                    "ChestVaultAccount",
+                    accountInfo.data,
+                );
+
+                console.log('updating......')
+                console.log(decoded);
+                setGameState(decoded.gameBoard);
+                setWinner(
+                    decoded.scoreSheet.winner.toString() != '11111111111111111111111111111111' ?
+                    decoded.scoreSheet.winner.toString() :
+                    'No Winner Yet'
+                );
+                setGameOver(decoded.scoreSheet.gameOver);
+                setPlayerTurn(decoded.scoreSheet.currentMove.toString());
+            }
+        );
+
+        if (gameOver && winner != '11111111111111111111111111111111') {
+            notify({
+                message: `Game Over! Winner is ${winner.slice(0,4)}...${winner.slice(-4)}`,
+                type: "success",
+            });
+            return () => {
+                connection.removeAccountChangeListener(subscriptionId);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
         getGameAccountInfo();
     }, []);
 
@@ -379,11 +622,12 @@ const Game = () => {
 
     return (
         <div>
-            {   
+            {/* {   
                 !loading && selectedCreator ?
                 renderGameBoard() :
                 null
-            }
+            } */}
+            {renderGameBoard()}
             <div
                 className="flex flex-col items-center"
             >
@@ -393,7 +637,13 @@ const Game = () => {
                 </button>
                 <button 
                     className="border-2 border-white m-4"
-                    onClick={() => initializeGameData(1)}
+                    onClick={() => getGameState()}
+                >
+                    Get Game State
+                </button>
+                <button 
+                    className="border-2 border-white m-4"
+                    onClick={() => initializeGameData('.25')}
                 >
                     Initialize Game Data
                 </button>
@@ -402,6 +652,18 @@ const Game = () => {
                     onClick={() => playerJoinsGame()}
                 >
                     Join Game
+                </button>
+                <button 
+                    className="border-2 border-white m-4"
+                    onClick={() => makeMove(selectedPit)}
+                >
+                    Make Move
+                </button>
+                <button 
+                    className="border-2 border-white m-4"
+                    onClick={() => withdraw()}
+                >
+                    Withdraw
                 </button>
             </div>
             <div>
