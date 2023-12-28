@@ -316,10 +316,13 @@ const Game = () => {
         */}
         return (
             <div className="flex flex-col items-center">
-                <div className="flex flex-col items-center">
-                    <p>Entry Fee: {entryFee ? entryFee : '???'}</p>
-                    <p>Player Turn: {playerTurn === playerOne ? `${playerOne.slice(0,4)}...${playerOne.slice(-4)}` : `${playerTwo.slice(0,4)}...${playerTwo.slice(-4)}`}</p>
-                </div>
+                {chestVaultAccountFetched && (
+                    <div className="flex flex-col items-center">
+                        {/* convert entryFee to a normal number from big number */}
+                        <p>Entry Fee: {entryFee ? entryFee / anchor.web3.LAMPORTS_PER_SOL : '???'} SOL</p>
+                        <p>{playerTurn === publicKey.toString() ? 'YOUR TURN' : `${playerTurn.slice(0,4)}...${playerTurn.slice(-4)}`}</p>
+                    </div>
+                )}
                 <div className="flex flex-row items-center gap-20">
                     <p>
                         {playerOne.slice(0, 4)}...{playerOne.slice(-4)}
@@ -627,48 +630,72 @@ const Game = () => {
                 renderGameBoard() :
                 null
             } */}
-            {renderGameBoard()}
+            {chestVaultAccountFetched && renderGameBoard()}
             <div
                 className="flex flex-col items-center"
             >
                 <button 
                     className="border-2 border-white m-4"
-                    onClick={() => handleClickGetData()}>Get Game Data
-                </button>
-                <button 
-                    className="border-2 border-white m-4"
-                    onClick={() => getGameState()}
+                    onClick={() => handleClickGetData()}
                 >
-                    Get Game State
+                    Check for Games
                 </button>
-                <button 
-                    className="border-2 border-white m-4"
-                    onClick={() => initializeGameData('.25')}
-                >
-                    Initialize Game Data
-                </button>
-                <button 
-                    className="border-2 border-white m-4"
-                    onClick={() => playerJoinsGame()}
-                >
-                    Join Game
-                </button>
-                <button 
-                    className="border-2 border-white m-4"
-                    onClick={() => makeMove(selectedPit)}
-                >
-                    Make Move
-                </button>
-                <button 
-                    className="border-2 border-white m-4"
-                    onClick={() => withdraw()}
-                >
-                    Withdraw
-                </button>
+                {selectedCreator &&(
+                    <button 
+                        className="border-2 border-white m-4"
+                        onClick={() => getGameState()}
+                    >
+                        Get Game State
+                    </button>
+                )}
+                {chestVaultAccountFetched && !playerTwo && (
+                    <button 
+                        className="border-2 border-white m-4"
+                        onClick={() => playerJoinsGame()}
+                    >
+                        Join Game
+                    </button>
+                )}
+                {chestVaultAccountFetched && playerTurn == publicKey.toString() && (
+                    <button 
+                        className="border-2 border-white m-4"
+                        onClick={() => makeMove(selectedPit)}
+                    >
+                        Make Move
+                    </button>
+                )}
+                {gameOver && (
+                    <div
+                        className="flex flex-col items-center"
+                    >
+                        <p>Game Over!</p>
+                        <p>Winner: {winner.slice(0,4)}...{winner.slice(-4)}</p>
+                    </div>
+                )}
+                {winner == publicKey?.toString() && gameOver && (
+                    <button 
+                        className="border-2 border-white m-4"
+                        onClick={() => withdraw()}
+                    >
+                        Withdraw
+                    </button>
+                )}
+                
             </div>
-            <div>
+            <div
+                className="flex flex-col items-center"
+            >
                 {renderCreatorSelection()}
+                {!chestVaultAccountFetched && (
+                    <button 
+                        className="border-2 border-white m-4"
+                        onClick={() => initializeGameData('.25')}
+                    >
+                        Create Game
+                    </button>
+                )}
             </div>
+            
         </div>
     )
 }
