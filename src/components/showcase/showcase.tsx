@@ -48,7 +48,13 @@ export default function Showcase() {
                     Coming Soon
                 </h1>
             </HorizontalImageCard>
-            <Link href='/mancala'>
+            <Link 
+                href='/mancala'
+                style={{
+                    height: '100%',
+                    width: '100%',
+                }}
+            >
                 <HorizontalImageCard>
                     <h1>Mancala</h1>
                     <Image 
@@ -57,15 +63,12 @@ export default function Showcase() {
                         height={600}
                         width={300}
                     />
-                    <h1
+                     <h1
                         style={{
-                            color: 'red',
-                            transform: 'rotate(-30deg)',
-                            fontSize: '2.5rem',
-                            border: '4px solid red',
+                            color: '#00ff00',
                         }}
                     >
-                        Coming Soon
+                        Live - Devnet
                     </h1>
                 </HorizontalImageCard>
             </Link>
