@@ -320,7 +320,7 @@ const Game = () => {
                     <div className="flex flex-col items-center">
                         {/* convert entryFee to a normal number from big number */}
                         <p>Entry Fee: {entryFee ? entryFee / anchor.web3.LAMPORTS_PER_SOL : '???'} SOL</p>
-                        <p>{playerTurn === publicKey.toString() ? 'YOUR TURN' : `${playerTurn.slice(0,4)}...${playerTurn.slice(-4)}`}</p>
+                        <p>{playerTurn === publicKey?.toString() ? 'YOUR TURN' : `${playerTurn.slice(0,4)}...${playerTurn.slice(-4)}`}</p>
                     </div>
                 )}
                 <div className="flex flex-row items-center gap-20">
@@ -613,7 +613,7 @@ const Game = () => {
                 connection.removeAccountChangeListener(subscriptionId);
             }
         }
-    }, []);
+    }, [chestVaultAccountFetched]);
 
     useEffect(() => {
         getGameAccountInfo();
@@ -648,7 +648,7 @@ const Game = () => {
                         Get Game State
                     </button>
                 )}
-                {chestVaultAccountFetched && !playerTwo && (
+                {chestVaultAccountFetched && playerTwo == '11111111111111111111111111111111' && (
                     <button 
                         className="border-2 border-white m-4"
                         onClick={() => playerJoinsGame()}
@@ -656,7 +656,7 @@ const Game = () => {
                         Join Game
                     </button>
                 )}
-                {chestVaultAccountFetched && playerTurn == publicKey.toString() && (
+                {chestVaultAccountFetched && playerTurn == publicKey?.toString() && (
                     <button 
                         className="border-2 border-white m-4"
                         onClick={() => makeMove(selectedPit)}

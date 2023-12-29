@@ -53,6 +53,7 @@ const Game = () => {
   const [entryFeeOnChain, setEntryFeeOnChain] = useState(0);
   const [authorityOnChain, setAuthorityOnChain] = useState("");
   const [playersOnChain, setPlayersOnChain] = useState([]);
+  const [playerHasPaid, setPlayerHasPaid] = useState(false);
 
   const [secretWord, setSecretWord] = useState("");
   const [guessesLeft, setGuessesLeft] = useState(6);
@@ -201,7 +202,7 @@ const Game = () => {
         setSecretWordOnChain(chest_vault_account?.password);
         setAuthorityOnChain(chest_vault_account?.creator.toString());
         setPlayersOnChain(chest_vault_account?.players);
-
+        console.log("players", chest_vault_account?.players);
         const secret_word_array = chest_vault_account?.password;
         setSecretWordOnChainArray(secret_word_array);
 
@@ -228,6 +229,7 @@ const Game = () => {
           });
           console.log("player_index", player_index);
           if (player_index != null && player_index != undefined && player_index >= 0) {
+            setPlayerHasPaid(true);
             setPlayerIndexInGameList(player_index);
             // console.log("player_index", player_index);
             // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
@@ -289,9 +291,9 @@ const Game = () => {
 
   async function handleClickInitialize() {
     // console.log("entryFee", entryFee);
-    // console.log("secretWord", secretWord);
+    console.log("secretWord", secretWord);
     const new_secret_word = await hashWord(secretWord);
-    // console.log("new_secret_word", new_secret_word);
+    console.log("new_secret_word", new_secret_word);
     // console.log("chestReward", chestReward);
     // console.log("maxAttempts", maxAttempts);
     notify({ type: 'loading', message: 'loading', description: 'Initializing game...' });
@@ -729,9 +731,9 @@ const Game = () => {
                   >
                     {/* map out each letter with a space in between, do not put space after last letter */}
                     {index < correctLetters?.length - 1 ? (
-                      <div>{letter} </div>
+                      <div>{letter}{" "} </div>
                     ) : (
-                      <div>{letter}</div>
+                      <div>{letter}{" "}</div>
                     )}
                   </div>
                 );
@@ -744,7 +746,7 @@ const Game = () => {
                     key={index}
                     className='flex flex-row justify-center items-center space-y-2'
                   >
-                    {letter}
+                    {letter}{" "}
                   </div>
                 );
               })}
@@ -776,20 +778,12 @@ const Game = () => {
           )}
           {/* {maxAttemptsOnChain > 0 && (
             <> */}
-              {playerIndexInGameList >= 0 ? (
+              {playerIndexInGameList >= 0 && playerHasPaid && (
                 <div
                   className='flex flex-col justify-center items-center space-y-2'
                 >
                   <p>Guesses left: {guessesLeft}</p>
-                  <p>Guessed letters: {
-                      // string of correct letters seperated by a space != _ and incorrectGuesses
-                      guessedLetters?.filter((letter) => {
-                        return letter != "_" && letter != incorrectGuesses;
-                      })
-                    }</p>
-                  {/* display correct letters seperated by a space */}
-                  {/* display the correct letters underlined */}
-                  <p>Correct letters: {correctLetters}</p>
+                  <p>Guessed letters: {incorrectGuesses}</p>
                   <div
                     className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
                   >
@@ -817,7 +811,8 @@ const Game = () => {
                     </button>
                   </div>
                 </div>
-              ) : (
+              )}
+              {!playerHasPaid && chestVaultAccount &&(
                 <div
                   className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2'
                 >
@@ -952,7 +947,8 @@ const Game = () => {
           console.log("decoded.players[player_index].correctLetters", decoded.players[player_index].correctLetters);
           console.log("decoded.players[player_index].incorrectGuesses", decoded.players[player_index].incorrectGuesses);
           let newGuessedLetters = [];
-          newGuessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
+          newGuessedLetters.push(...decoded.players[player_index].correctLetters)
+          newGuessedLetters.push(...decoded.players[player_index].incorrectGuesses);
           setGuessedLetters(
             newGuessedLetters,
           );
