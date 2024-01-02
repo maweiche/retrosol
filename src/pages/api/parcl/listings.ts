@@ -9,15 +9,6 @@ type Error = {
   message: string
 }
 
-// const options = {
-//     method: 'GET',
-//     url: 'https://api.realestate.parcllabs.com/v1/listings/2900187/current',
-//     headers: {
-//       accept: 'application/json',
-//       Authorization: '6641712ffbf62260f17744b8cc2374e191ad5e04bc8118f5f1'
-//     }
-//   };
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data | Error>
@@ -42,7 +33,6 @@ export default async function handler(
     //     }
     //   }
     
-    // return with just the "listings_30_day" value
     const listings_data = data.listings.listings_30_day
 
     if (listings_data !== null) {
