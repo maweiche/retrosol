@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 import React, { useDebugValue } from "react";
-import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -12,8 +11,6 @@ import {
 } from "../utils/anchor";
 import * as anchor from "@project-serum/anchor";
 import { notify } from "../../../utils/notifications";
-import { set } from "date-fns";
-import { get } from "http";
 
 const Game = () => {
     const { publicKey, sendTransaction } = useWallet();
