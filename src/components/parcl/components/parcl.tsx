@@ -17,10 +17,9 @@ const Parcl = () => {
     const [marketData, setMarketData] = useState(null);
 
     const [usdcBalance, setUsdcBalance] = useState(null);
-
-    const [signatures, setSignatures] = useState(null);
     const [parsedTransactions, setParsedTransactions] = useState(null);
     const [lastLiquidation, setLastLiquidation] = useState(null);
+    
     // usdc mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     // liquidity pool: 82dGS7Jt4Km8ZgwZVRsJ2V6vPXEhVdgDaMP7cqPGG1TW
     // liquidity usdc token account: Ai9AuTfGncuFxEknjZT4HU21Rkv98M1QyXpbW9Xct6LK
@@ -36,8 +35,6 @@ const Parcl = () => {
 
     async function getRecentTransactions() {
         const signatures = await connection.getSignaturesForAddress(tokenAccount, {limit: 10});
-        setSignatures(signatures);
-
         const recentTxns = [];
         for (let i = 0; i < signatures.length; i++) {
             const parsedTransaction = await connection.getParsedTransaction(signatures[i].signature);
@@ -76,7 +73,9 @@ const Parcl = () => {
             <div
                 className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-4 gap-4'
             >
-                <p>
+                <p
+                    className='underline'
+                >
                     Parcl Liquidity Pool Balance:
                 </p>
                 <p
@@ -84,7 +83,9 @@ const Parcl = () => {
                 >
                     {usdcBalance} USDC
                 </p>
-                <p>
+                <p
+                    className='underline'
+                >
                     Recent Contributions:
                 </p>
                 <div
@@ -287,7 +288,6 @@ const Parcl = () => {
             console.log('pinging data point: ', `/api/parcl/markets?state=${selectedState.abbreviation}`)
             const response = await fetch(`/api/parcl/markets?state=${selectedState.abbreviation}`);
             const data = await response.json();
-            console.log(data);
             setCityData(data);
         }
         getStateMarkets();
@@ -301,17 +301,10 @@ const Parcl = () => {
             console.log('pinging data point: ', `/api/parcl/single?id=${selectedCity.parcl_id}`)
             const response = await fetch(`/api/parcl/single?id=${selectedCity.parcl_id}`);
             const data = await response.json();
-            console.log(data);//{singles_data: Array(2)}
-            // the first item in array is men's single population, the 2nd item is female single population
-            // destruct the json and set the state
             const {singles_data} = data;
             console.log('singles_data: ', singles_data);
-            // for each object in the array, get the value of the first key
-            const obj_values = Object.values(singles_data);
-            console.log('obj_values: ', obj_values); //[{male_single_population: 3882371}, {female_single_population: 4092451}]
-            // extract the values from the array of objects
+            const obj_values = Object.values(singles_data); //[{male_single_population: 3882371}, {female_single_population: 4092451}]
             const values = obj_values.map(obj => Object.values(obj)[0]);
-            console.log('values: ', values); //[3882371, 4092451]
             setMarketSingles(values);
         }
         const getMarketData = async () => {
@@ -323,7 +316,6 @@ const Parcl = () => {
             const {listings_data} = data;
             setMarketData(listings_data);
         }
-
         getCitySingles();
         getMarketData();
         setLoading(false);
