@@ -33,6 +33,7 @@ const Game = () => {
     // basic states
     const [loading, setLoading] = useState<boolean>(false);
     const [hookedGame, setHookedGame] = useState<boolean>(false);
+    const [showCreateGame, setShowCreateGame] = useState<boolean>(false);
 
     // game board states
     const [selectedSquareToAttack, setSelectedSquareToAttack] = useState<Array<number> | null>(null); 
@@ -105,14 +106,14 @@ const Game = () => {
     
           console.log("game_data_decoded", game_data_decoded);
     
-          console.log("creator list", game_data_decoded?.allAuthorities);
+          console.log("creator list", game_data_decoded?.allCreators);
           setAllCreators(
-            game_data_decoded?.allAuthorities.map((creator: { toString: () => any; }) => {
+            game_data_decoded?.allCreators.map((creator: { toString: () => any; }) => {
               return creator.toString();
             }),
           );
           setGameDataAccount(game_data_decoded);
-          console.log("game_data_decoded", game_data_decoded.allAuthorities[0].toString());
+          console.log("game_data_decoded", game_data_decoded.allCreators[0].toString());
         }
     
     }
@@ -358,7 +359,7 @@ const Game = () => {
     const renderCreatorSelection = () => {
         return (
           <div>
-            {allCreators.length > 0 && (
+            {allCreators?.length > 0 && (
               <div
                 className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
               >
@@ -381,7 +382,50 @@ const Game = () => {
             )}
           </div>
         );
-      };
+    };
+
+    const renderCreateGame = () => {
+        return (
+            <div
+                className="flex flex-col items-center justify-center gap-4"
+            >
+                
+                <button
+                    className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => {
+                        setShowCreateGame(!showCreateGame);
+                    }}
+                >
+                    {
+                        showCreateGame ? "Cancel" : "Create Game"
+                    }
+                </button>
+                   
+        
+                {showCreateGame && (
+                    <div
+                        className="flex flex-col items-center justify-center gap-4"
+                    >
+                        <input
+                            className="text-black align-middle text-center" 
+                            onChange={(e) => {
+                                setEntryFee(e.target.value);
+                            }}
+                            placeholder="Entry Fee"
+                        />
+                        <button
+                            className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                            onClick={() => {
+                                initializeNewGame(entryFee as string);
+                            }}
+                        >
+                            Create Game
+                        </button>
+                    </div>
+                )}
+            </div>
+        )
+    }
 
     const renderGameBoard = () => {
         return (
@@ -497,10 +541,20 @@ const Game = () => {
             </div>
         )
     }
+
+    useEffect(() => {
+        if(!gameDataAccount) {
+            handleClickGetData();
+        }
+    });
   
     return (
-        <div>
-            {renderGameBoard()}
+        <div
+            className="flex flex-col items-center justify-center gap-4"
+        >
+            {gameState && renderGameBoard()}
+            {!gameState && renderCreateGame()}
+            {!showCreateGame && allCreators?.length > 0 && renderCreatorSelection()}
         </div>
     );
 };
