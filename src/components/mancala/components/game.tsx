@@ -20,9 +20,7 @@ const Game = () => {
         []
     );
 
-    const [listOfCreators, setListOfCreators] = useState([
-        publicKey?.toBase58() as string
-    ]);
+    const [listOfCreators, setListOfCreators] = useState<Array<any> | null>(null);
     const [selectedCreator, setSelectedCreator] = useState<String>();
     const [chestVaultAccountFetched, setChestVaultAccountFetched] = useState<PublicKey>();
     const [hookedGame, setHookedGame] = useState<boolean>(false);

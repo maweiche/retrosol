@@ -30,12 +30,23 @@ type ChestVaultAccount = {
 
 const Game = () => {
     const { publicKey, sendTransaction } = useWallet();
+    // basic states
+    const [loading, setLoading] = useState<boolean>(false);
+    const [hookedGame, setHookedGame] = useState<boolean>(false);
+
     // game board states
     const [selectedSquareToAttack, setSelectedSquareToAttack] = useState<Array<number> | null>(null); 
 
     // program states
     const [programId, setProgramId] = useState<PublicKey | null>(null);
-    const [allCreators, setAllCreators] = useState<Array<PublicKey> | null>(null);
+    const [gameDataAccount, setGameDataAccount] = useState<PublicKey | null>(null);
+    const [chestVaultAccountFetched, setChestVaultAccountFetched] = useState<PublicKey | null>(null);
+    const [allCreators, setAllCreators] = useState<Array<any> | null>(null);
+    const [selectedCreator, setSelectedCreator] = useState<String | null>(null);
+    const [entryFee, setEntryFee] = useState<string | null>(null);
+    const [gameState, setGameState] = useState<Array<Array<number>> | null>(null);
+    const [winner, setWinner] = useState<string | null>(null);
+
 
     // game logic
     const [playerOne, setPlayerOne] = useState<PublicKey | null>(null);
@@ -74,20 +85,303 @@ const Game = () => {
     // PROGRAM FUNCTIONS
 
     // Get data from the global game data account
+    async function handleClickGetData() {
+        setLoading(true);
+        console.log("program", program.programId.toString());
+        let data = PublicKey.findProgramAddressSync(
+          [Buffer.from("battleshipData")],
+          program.programId,
+        );
+        // console.log("data", data);
+        setGameDataAccount(data[0]);
+    
+        const game_account_info = await connection.getAccountInfo(data[0]);
+    
+        if (game_account_info != null) {
+          const game_data_decoded = program.coder.accounts.decode(
+            "GameDataAccount",
+            game_account_info?.data,
+          );
+    
+          console.log("game_data_decoded", game_data_decoded);
+    
+          console.log("creator list", game_data_decoded?.allAuthorities);
+          setAllCreators(
+            game_data_decoded?.allAuthorities.map((creator: { toString: () => any; }) => {
+              return creator.toString();
+            }),
+          );
+          setGameDataAccount(game_data_decoded);
+          console.log("game_data_decoded", game_data_decoded.allAuthorities[0].toString());
+        }
+    
+    }
 
     // Get Data from the selected ChestVaultAccount
+    async function getGameState() {
+        if (selectedCreator) {
+            setLoading(true);
+            const creator_key = new PublicKey(selectedCreator);
+            const treasure = anchor.web3.PublicKey.findProgramAddressSync(
+              [Buffer.from("chestVault"), creator_key.toBuffer()],
+              program.programId,
+            );
+
+            setChestVaultAccountFetched(treasure[0]);
+
+            const treasure_account_info = await connection.getAccountInfo(
+                treasure[0],
+            );
+            console.log(treasure_account_info);
+
+            if (treasure_account_info != null) {
+                const decoded = program.coder.accounts.decode(
+                    "ChestVaultAccount",
+                    treasure_account_info?.data,
+                );
+
+                console.log("entry fee", decoded.entryFee.toString());
+                console.log("player one", decoded.scoreSheet.playerOne.toString());
+                console.log("player two", decoded.scoreSheet.playerTwo.toString());
+                console.log("player turn", decoded.scoreSheet.currentMove.toString());
+                console.log("game over", decoded.scoreSheet.gameOver);
+                console.log("winner", decoded.scoreSheet.winner.toString());
+                console.log("game board", decoded.gameBoard);
+                
+                setEntryFee(decoded.entryFee.toString());
+                setPlayerOne(decoded.scoreSheet.playerOne.toString());
+                setPlayerTwo(decoded.scoreSheet.playerTwo.toString());
+                setPlayerTurn(decoded.scoreSheet.currentMove.toString());
+                setGameOver(decoded.scoreSheet.gameOver);
+                setWinner(decoded.scoreSheet.winner.toString());
+                setGameState(decoded.gameBoard);
+
+                
+            }
+            setLoading(false);
+        }
+    }
 
     // Create ChestVaultAccount/Game
+    async function initializeNewGame(entry_fee: string) {
+        const entry_fee_as_bn = new anchor.BN(
+            // parse entryFee as a float and convert to lamports
+            parseFloat(entry_fee) * anchor.web3.LAMPORTS_PER_SOL,
+        );
+        const newChestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
+            program.programId
+        );
+        console.log("chest vault account", newChestVaultAccount[0].toString());
+        console.log("entry fee", entry_fee_as_bn.toString());
+        const transaction = await program.methods
+            .initializeGameData(
+                entry_fee_as_bn
+            )
+            .accounts({
+                gameDataAccount: globalLevel1GameDataAccount as PublicKey,
+                chestVaultAccount: newChestVaultAccount[0] as PublicKey,
+                signer: publicKey as PublicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+
+        handleClickGetData();
+    }
 
     // Join existing ChestVaultAccount/Game
 
+    async function playerJoinsGame() {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+        console.log("chest vault account", chestVaultAccount[0].toString());
+        const transaction = await program.methods
+            .playerJoinsGame()
+            .accounts({
+                chestVaultAccount: chestVaultAccount[0] as PublicKey,
+                signer: publicKey as PublicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+
+        setHookedGame(true);
+        await getGameState();
+    }
+
     // Set Game Board
+    async function playerSetsGameBoard() {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+
+        const transaction = await program.methods
+            .choosePlacement(
+                //TODO: pass in the game board
+                sample_board
+            )
+            .accounts({
+            chestVaultAccount: chestVaultAccount[0],
+            signer: publicKey as PublicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+    }
 
     // Attack Square
+    async function attackSquare(square: Array<number>) {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+
+        const transaction = await program.methods
+            .makeMove(
+                selectedSquareToAttack
+            )
+            .accounts({
+            chestVaultAccount: chestVaultAccount[0],
+            signer: publicKey as PublicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+        
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature: txHash,
+        });
+    }
 
     // Withdraw winnings
+    async function withdrawWinngs() {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+
+        const transaction = await program.methods
+            .withdrawLoot()
+            .accounts({
+            chestVaultAccount: chestVaultAccount[0],
+            signer: publicKey as PublicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+        await connection.confirmTransaction({
+          blockhash,
+          lastValidBlockHeight,
+          signature: txHash,
+        });
+    }
 
     // Close ChestVaultAccount
+    async function closeTreasureAccount() {
+        const creator_pubkey = new PublicKey(selectedCreator);
+        const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            program.programId
+        );
+        const transaction = await program.methods
+            .closeAccount()
+            .accounts({
+                gameDataAccount: gameDataAccount,
+                chestVaultAccount: chestVaultAccount[0],
+                signer: publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .transaction();
+
+        const txHash = await sendTransaction(transaction, connection);
+
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+        await connection.confirmTransaction({
+          blockhash,
+          lastValidBlockHeight,
+          signature: txHash,
+        });
+    }
+
+    // Game functions
+    async function handleClickSelectCreator(creator: string) {
+        console.log("selecting creator", creator);
+        setSelectedCreator(creator);
+    }
+
+    // Game Renders
+    const renderCreatorSelection = () => {
+        return (
+          <div>
+            {allCreators.length > 0 && (
+              <div
+                className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
+              >
+                <p>Select a creator</p>
+                <select
+                  className='text-black'
+                  value={selectedCreator?.toString()}
+                  onChange={(e) => handleClickSelectCreator(e.target.value)}
+                >
+                    <option value={null}>Select a creator</option>
+                    {allCreators.map((creator: string, index: number) => {
+                        return (
+                        <option key={index} value={creator?.toString()}>
+                            {creator?.toString()}
+                        </option>
+                        );
+                    })}
+                    </select>
+              </div>
+            )}
+          </div>
+        );
+      };
 
     const renderGameBoard = () => {
         return (
