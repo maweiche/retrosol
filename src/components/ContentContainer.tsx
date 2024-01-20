@@ -52,6 +52,12 @@ export const ContentContainer: React.FC<Props> = ({ children }) => {
             href="/mancala"
           />
           </li>
+          <li>
+          <NavElement
+            label="Battleship"
+            href="/battleship"
+          />
+          </li>
         </ul>
       </div>
     </div>
