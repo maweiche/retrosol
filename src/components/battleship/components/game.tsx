@@ -11,6 +11,8 @@ import {
 } from "../utils/anchor";
 import * as anchor from "@project-serum/anchor";
 import { notify } from "../../../utils/notifications";
+import { set } from "date-fns";
+import { pl } from "date-fns/locale";
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 
@@ -30,6 +32,7 @@ type ChestVaultAccount = {
 
 const Game = () => {
     const { publicKey, sendTransaction } = useWallet();
+    const default_publicKey = "11111111111111111111111111111111";
     // basic states
     const [loading, setLoading] = useState<boolean>(false);
     const [hookedGame, setHookedGame] = useState<boolean>(false);
@@ -45,7 +48,6 @@ const Game = () => {
     const [allCreators, setAllCreators] = useState<Array<any> | null>(null);
     const [selectedCreator, setSelectedCreator] = useState<String | null>(null);
     const [entryFee, setEntryFee] = useState<string | null>(null);
-    const [gameState, setGameState] = useState<Array<Array<number>> | null>(null);
     const [winner, setWinner] = useState<string | null>(null);
 
 
@@ -54,21 +56,27 @@ const Game = () => {
     const [playerTwo, setPlayerTwo] = useState<PublicKey | null>(null);
     const [playerTurn, setPlayerTurn] = useState<PublicKey | null>(null);
     const [gameOver, setGameOver] = useState<boolean>(false);
-
+    const [gameState, setGameState] = useState<Array<Array<number>> | null>(null);
+    const [playerOneReady, setPlayerOneReady] = useState<boolean>(false);
+    const [playerTwoReady, setPlayerTwoReady] = useState<boolean>(false);
     const sample_board =
     [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 0
-        [1, 0, 0, 0, 0, 0, 3, 0, 0, 4], // row 1
-        [1, 0, 0, 0, 0, 0, 3, 0, 0, 4], // row 2
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 4], // row 3
-        [0, 2, 2, 2, 2, 2, 0, 0, 0, 0], // row 4
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 1
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 2
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 3
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 4
     ////////////////////////////////////////////////
-        [0, 0, 0, 0, 2, 0, 4, 4, 4, 0], // row 5
-        [0, 0, 0, 0, 2, 0, 0, 0, 0, 0], // row 6
-        [0, 3, 3, 0, 2, 0, 0, 0, 0, 0], // row 7
-        [7, 0, 0, 0, 2, 0, 0, 0, 0, 0], // row 8
-        [8, 1, 1, 0, 2, 0, 0, 0, 0, 0], // row 9
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 5
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 6
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 7
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 8
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // row 9
     ];
+    const [placedShips, setPlacedShips] = useState<Array<Array<number>> | null>(sample_board);
+    const [placementTotal, setPlacementTotal] = useState<number>(0);
+    const [placementValid, setPlacementValid] = useState<boolean>(true);
+    
 
     const row_map = {
         0: "A",
@@ -112,8 +120,8 @@ const Game = () => {
               return creator.toString();
             }),
           );
-          setGameDataAccount(game_data_decoded);
-          console.log("game_data_decoded", game_data_decoded.allCreators[0].toString());
+          setGameDataAccount(game_data_decoded!);
+          console.log("game_data_decoded", game_data_decoded.allCreators[0]?.toString());
         }
     
     }
@@ -146,7 +154,7 @@ const Game = () => {
                 console.log("player two", decoded.scoreSheet.playerTwo.toString());
                 console.log("player turn", decoded.scoreSheet.currentMove.toString());
                 console.log("game over", decoded.scoreSheet.gameOver);
-                console.log("winner", decoded.scoreSheet.winner.toString());
+                console.log("winner", decoded.scoreSheet.winner?.toString());
                 console.log("game board", decoded.gameBoard);
                 
                 setEntryFee(decoded.entryFee.toString());
@@ -154,10 +162,38 @@ const Game = () => {
                 setPlayerTwo(decoded.scoreSheet.playerTwo.toString());
                 setPlayerTurn(decoded.scoreSheet.currentMove.toString());
                 setGameOver(decoded.scoreSheet.gameOver);
-                setWinner(decoded.scoreSheet.winner.toString());
+                setWinner(decoded.scoreSheet.winner?.toString());
                 setGameState(decoded.gameBoard);
+                let player_one_ships = 0;
+                // iterate through rows 0-4 the game board and check if all the ships have been placed
+                // do so by incrementing player_one_ships by 1 for each non-0 square
+                for (let i = 0; i < 5; i++) {
+                    for (let j = 0; j < 10; j++) {
+                        if (decoded.gameBoard[i][j] !== 0) {
+                            player_one_ships += 1;
+                        }
+                    }
+                }
+                // if all the ships have been placed, set player one ready to true
+                if (player_one_ships >= 14) {
+                    setPlayerOneReady(true);
+                }
 
-                
+                let player_two_ships = 0;
+                // iterate through rows 5-9 the game board and check if all the ships have been placed
+                // do so by incrementing player_two_ships by 1 for each non-0 square
+                for (let i = 5; i < 10; i++) {
+                    for (let j = 0; j < 10; j++) {
+                        if (decoded.gameBoard[i][j] !== 0) {
+                            player_two_ships += 1;
+                        }
+                    }
+                }
+
+                // if all the ships have been placed, set player two ready to true
+                if (player_two_ships >=14) {
+                    setPlayerTwoReady(true);
+                }
             }
             setLoading(false);
         }
@@ -196,6 +232,8 @@ const Game = () => {
             lastValidBlockHeight,
             signature: txHash,
         });
+
+        setShowCreateGame(false);
 
         handleClickGetData();
     }
@@ -243,7 +281,7 @@ const Game = () => {
         const transaction = await program.methods
             .choosePlacement(
                 //TODO: pass in the game board
-                sample_board
+                placedShips as Array<Array<number>>
             )
             .accounts({
             chestVaultAccount: chestVaultAccount[0],
@@ -261,6 +299,8 @@ const Game = () => {
             lastValidBlockHeight,
             signature: txHash,
         });
+
+        await getGameState();
     }
 
     // Attack Square
@@ -291,6 +331,8 @@ const Game = () => {
             lastValidBlockHeight,
             signature: txHash,
         });
+
+        setSelectedSquareToAttack(null);
     }
 
     // Withdraw winnings
@@ -323,9 +365,12 @@ const Game = () => {
 
     // Close ChestVaultAccount
     async function closeTreasureAccount() {
-        const creator_pubkey = new PublicKey(selectedCreator);
+        const [gameDataAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from("battleshipData")],
+            program.programId
+          );
         const chestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
-            [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
+            [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
             program.programId
         );
         const transaction = await program.methods
@@ -353,6 +398,72 @@ const Game = () => {
     async function handleClickSelectCreator(creator: string) {
         console.log("selecting creator", creator);
         setSelectedCreator(creator);
+    }
+
+    async function checkPlacementTotal() {
+        let total = 0;
+        // if(playerOne.toString() == publicKey.toString()){
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 10; j++) {
+                    if (placedShips[i][j] !== 0) {
+                        total += 1;
+                    }
+                }
+            }
+        // } else if (playerTwo.toString() == publicKey.toString()){
+        //     for (let i = 5; i < 10; i++) {
+        //         for (let j = 0; j < 10; j++) {
+        //             if (placedShips[i][j] !== 0) {
+        //                 total += 1;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // if the total is 14 then we have to check and make sure that the ships are placed correctly
+        // meaning a square that = 1 must have a square to the right or left that = 1 or a square above or below that = 1
+        // if not, then we have to notify the user that the ships are not placed correctly
+        if(total == 14) {
+            if(playerOne.toString() == publicKey.toString()){
+                for (let i = 0; i < 5; i++) {
+                    for (let j = 0; j < 10; j++) {
+                        if (placedShips[i][j] == 1) {
+                            if (placedShips[i][j + 1] !== 1 && placedShips[i][j - 1] !== 1 && placedShips[i + 1][j] !== 1 && placedShips[i - 1][j] !== 1) {
+                                notify({
+                                    message: "Ships must be placed horizontally or vertically!",
+                                    type: "error",
+                                });
+                                setPlacementValid(false);
+                                return 0;
+                            }
+                        }
+                    }
+                }
+            } else if (playerTwo.toString() == publicKey.toString()){
+                for (let i = 5; i < 10; i++) {
+                    for (let j = 0; j < 10; j++) {
+                        if (placedShips[i][j] == 1) {
+                            if (placedShips[i][j + 1] !== 1 && placedShips[i][j - 1] !== 1 && placedShips[i + 1][j] !== 1 && placedShips[i - 1][j] !== 1) {
+                                notify({
+                                    message: "Ships must be placed horizontally or vertically!",
+                                    type: "error",
+                                });
+                                setPlacementValid(false);
+                                return 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(total == 14) {
+            notify({
+                message: "All ships placed!",
+                type: "success",
+            });
+        }
+        return total;
     }
 
     // Game Renders
@@ -427,6 +538,111 @@ const Game = () => {
         )
     }
 
+    const renderJoinGame = () => {
+
+        return(
+            <div
+                className="flex flex-col items-center justify-center gap-4"
+            >
+                <p>
+                    Join Game
+                </p>
+                <p>
+                    Entry Fee: {parseInt(entryFee) / LAMPORTS_PER_SOL}
+                </p>
+                <button
+                    className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => {
+                        playerJoinsGame();
+                    }}
+                >
+                    Join Game
+                </button>
+            </div>
+        )
+    }
+
+    const renderShipPlacement = () => {
+        return(
+            <div
+                className="flex flex-col items-center justify-center gap-4"
+            >
+                <p>
+                    Place Your Ships
+                </p>
+                <p>
+                    Ship Units: {placementTotal}/14
+                </p>
+                <p>
+                    ⛴️ : 5 |
+                    🚢 : 4 |
+                    🛥️ : 3 |
+                    🛶 : 2 |
+                </p>
+                <div
+                    // display a 10x10 grid of squares with borders, size should be 12px x 12px
+                    className="grid grid-cols-10 gap-0"
+                >
+                    {/* for each square, display a div with a border */}
+                    {
+                        placedShips?.slice(0,5).map((row, i) => (
+                            row.map((square, j) => (
+                                <div
+                                    key={i * 10 + j}
+                                    className="border-2 border-white h-12 w-12 text-center font-bold text-2xl text-white py-2 cursor-pointer"
+                                    style={{
+                                        backgroundColor: placedShips[i][j] || placedShips[i + 5][j] == 1 ? "green" : "blue",
+                                    }}
+                                    onClick={() => {
+                                        let newPlacedShips = [...placedShips]
+                                        
+                                            if (publicKey.toString() == playerOne.toString()){
+                                                // change the square to a 1 in the placedShips array
+                                                if (newPlacedShips[i][j] === 1) {
+                                                    newPlacedShips[i][j] = 0;
+                                                } else {
+                                                    if(placementTotal < 14){
+                                                        newPlacedShips[i][j] = 1;
+                                                    }
+                                                }
+                                            } else if (publicKey.toString() == playerTwo.toString() && placementTotal <= 14) {
+                                                //Player 2
+                                                if (newPlacedShips[i][j] === 1) {
+                                                    newPlacedShips[i][j] = 0;
+                                                } else {
+                                                    if(placementTotal < 14){
+                                                        newPlacedShips[i][j] = 1;
+                                                    }
+                                                }
+                                            }
+                                            setPlacedShips(newPlacedShips);
+                                        
+                                    }}
+                                    aria-disabled={placementTotal >= 14}
+                                >
+                                    {
+                                        playerOne.toString() == publicKey.toString() ? row_map[i] + (j + 1) : row_map[i + 5] + (j + 1)
+                                    }
+                                </div>
+                            ))
+                        ))
+                    }
+                </div>
+
+                {placementTotal == 14 && placementValid && (
+                    <button
+                        className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => {
+                            playerSetsGameBoard();
+                        }}
+                    >
+                        Submit
+                    </button>
+                )}
+            </div>
+        )
+    }
+
     const renderGameBoard = () => {
         return (
             <div
@@ -437,17 +653,18 @@ const Game = () => {
                         // if the player one is null, display nothing, else display the player one
                         !playerOne ? "" : "Player One: " + playerOne.toString().slice(0, 4) + "..." + playerOne.toString().slice(-4)
                     }
+                </p>
+                <p>
                     { playerOne && playerTwo ? " vs " : ""}
+                </p>
+                <p>
                     {
                         // if the player two is null, display nothing, else display the player two
                         !playerTwo ? "" : "Player Two: " + playerTwo.toString().slice(0, 4) + "..." + playerTwo.toString().slice(-4)
                     }
                 </p>
                 <p>
-                    {
-                        // if the player turn is null, display nothing, else display the player turn
-                        !playerTurn ? "" : "Player Turn: " + playerTurn.toString().slice(0, 4) + "..." + playerTurn.toString().slice(-4)
-                    }
+                    {playerTurn && playerOne && playerTwo ? "Current Turn: " + (playerTurn.toString() == playerOne.toString() ? "Player One" : "Player Two") : ""}
                 </p>
                 <div
                     // display a 10x10 grid of squares with borders, size should be 12px x 12px
@@ -455,7 +672,7 @@ const Game = () => {
                 >
                     {/* for each square, display a div with a border */}
                     {
-                        sample_board.slice(0,5).map((row, i) => (
+                        gameState?.slice(0,5).map((row, i) => (
                             row.map((square, j) => (
                                 <div
                                     key={i * 10 + j}
@@ -466,7 +683,7 @@ const Game = () => {
                                         border: selectedSquareToAttack && selectedSquareToAttack[0] === i && selectedSquareToAttack[1] === j && "2px solid red",
                                     }}
                                     onClick={() => {
-                                        if (square !== 7 && square !== 8 && square !== 9) {
+                                        if (square !== 7 && square !== 8 && square !== 9 && playerTwo.toString() == publicKey.toString() && playerTurn.toString() == publicKey.toString()) {
                                             setSelectedSquareToAttack([i, j]);
                                             // console log the square that was clicked [row, col]
                                             console.log([i, j]);
@@ -486,15 +703,12 @@ const Game = () => {
                         ))
                     }
                 </div>
-                {/* display a horizontal divider line to seperate the 2 sides of the board */}
                 <div className="border-2 border-white h-6 w-full bg-orange-500"></div>
                 <div
-                    // display a 10x10 grid of squares with borders, size should be 12px x 12px
                     className="grid grid-cols-10 gap-0"
                 >
-                    {/* for each square, display a div with a border */}
                     {
-                        sample_board.slice(-5).map((row, i) => (
+                        gameState?.slice(-5).map((row, i) => (
                             row.map((square, j) => (
                                 <div
                                     key={i * 10 + j}
@@ -505,7 +719,7 @@ const Game = () => {
                                     }}
                                     onClick={() => {
                                         // if the square isn't a 8, 8, or 9, set the selected square to attack to the current square
-                                        if (square !== 7 && square !== 8 && square !== 9) {
+                                        if (square !== 7 && square !== 8 && square !== 9 && playerOne.toString() == publicKey.toString() && playerTurn.toString() == publicKey.toString()) {
                                             setSelectedSquareToAttack([i + 5, j]);
                                             // console log the square that was clicked [row, col]
                                             console.log([i + 5, j]);
@@ -527,34 +741,141 @@ const Game = () => {
                         ))
                     }
                 </div>
-                <button
-                    className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-                    onClick={() => {
-                        // if the selected square to attack is not null, attack the square
-                        if (selectedSquareToAttack) {
-                            // attackSquare(selectedSquareToAttack);
-                        }
-                    }}
-                >
-                    Attack
-                </button>
+                {!gameOver && (
+                    <button
+                        className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => {
+                            // if the selected square to attack is not null, attack the square
+                            if (selectedSquareToAttack) {
+                                attackSquare(selectedSquareToAttack);
+                            }
+                        }}
+                        disabled={!selectedSquareToAttack || gameOver || playerTurn.toString() !== publicKey?.toString() || !playerOneReady || !playerTwoReady}
+                    >
+                        Attack!
+                    </button>
+                )}
             </div>
         )
     }
+
+    const renderGameOver = () => {
+
+        return(
+            <div
+                className="flex flex-col items-center justify-center gap-4"
+            >
+                {
+                    publicKey.toString() == winner ? (
+                        <div
+                            className="flex flex-col items-center justify-center gap-4"
+                        >
+                            <p>You won!</p>
+                            <button
+                                className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                onClick={() => {
+                                    withdrawWinngs();
+                                }}
+                            >
+                                Withdraw Winnings
+                            </button>
+                        </div>
+                    ) : (
+                        <p>
+                            You lost!
+                        </p>
+                    )
+                }
+                {
+                    publicKey.toString() == playerOne.toString() && (
+                        <div
+                            className="flex flex-col items-center justify-center gap-4"
+                        >
+                            
+                            <button
+                                className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                onClick={() => {
+                                    closeTreasureAccount();
+                                }}
+                            >
+                                Close Game and Withdraw Rent
+                            </button>
+                        </div>
+                    )
+                }
+            </div>
+        )
+    }
+
+    useEffect(() => {
+        if(publicKey && gameState){
+            checkPlacementTotal().then((total) => {
+                setPlacementTotal(total);
+                console.log("placement total", total);
+            });
+        }
+    }, [placedShips]);
+
+    useEffect(() => {
+        if (selectedCreator) {
+            getGameState();
+        }
+    }, [selectedCreator]);
 
     useEffect(() => {
         if(!gameDataAccount) {
             handleClickGetData();
         }
     });
+
+    useEffect(() => {
+        if (!chestVaultAccountFetched) return;
+        console.log('chestVault hooked')
+        const subscriptionId = connection.onAccountChange(
+            chestVaultAccountFetched as PublicKey,
+            (accountInfo) => {
+                const decoded = program.coder.accounts.decode(
+                    "ChestVaultAccount",
+                    accountInfo.data,
+                );
+
+                console.log('updating......')
+                console.log(decoded);
+                setGameState(decoded.gameBoard);
+                setWinner(
+                    decoded.scoreSheet.winner?.toString() != '11111111111111111111111111111111' ?
+                    decoded.scoreSheet.winner?.toString() :
+                    'No Winner Yet'
+                );
+                setGameOver(decoded.scoreSheet.gameOver);
+                console.log('player turn: ', decoded.scoreSheet.currentMove?.toString());
+                setPlayerTurn(decoded.scoreSheet.currentMove?.toString());
+            }
+        );
+
+        if (gameOver && winner != '11111111111111111111111111111111') {
+            notify({
+                message: `Game Over! Winner is ${winner.slice(0,4)}...${winner.slice(-4)}`,
+                type: "success",
+            });
+            return () => {
+                connection.removeAccountChangeListener(subscriptionId);
+            }
+        }
+    }, [chestVaultAccountFetched, gameOver, winner]);
   
     return (
         <div
             className="flex flex-col items-center justify-center gap-4"
         >
-            {gameState && renderGameBoard()}
-            {!gameState && renderCreateGame()}
-            {!showCreateGame && allCreators?.length > 0 && renderCreatorSelection()}
+            {publicKey && !showCreateGame && allCreators?.length > 0 && renderCreatorSelection()}
+            {publicKey && gameState && playerOne.toString() == publicKey.toString() && playerOneReady && renderGameBoard()}
+            {publicKey && gameState && playerTwo.toString() == publicKey.toString() && playerTwoReady && renderGameBoard()}
+            {publicKey && !gameState && renderCreateGame()}
+            {publicKey && gameState && playerOne.toString() != publicKey.toString() && playerTwo.toString() == default_publicKey && renderJoinGame()}
+            {publicKey && !showCreateGame && selectedCreator && gameState && playerOne.toString() == publicKey.toString() && !playerOneReady && renderShipPlacement()}
+            {publicKey && !showCreateGame && selectedCreator && gameState && playerTwo.toString() == publicKey.toString() && !playerTwoReady && renderShipPlacement()}
+            {publicKey && gameState && gameOver && renderGameOver()}
         </div>
     );
 };
