@@ -678,7 +678,11 @@ const Game = () => {
                                     key={i * 10 + j}
                                     className="border-2 border-white h-12 w-12 text-center font-bold text-2xl text-white py-2"
                                     style={{
-                                        backgroundColor: square === 8 ? "green": square === 9 ? "green" : square === 1 ? "green" : square === 2 ? "green" : square === 3 ? "green" : square === 4 ? "green" : "blue",
+                                        backgroundColor: 
+                                            square === 8 ? "green" 
+                                            : playerOne.toString() == publicKey.toString() && square === 9 ? "green" 
+                                            : playerOne.toString() == publicKey.toString() &&  square === 1 ? "green" 
+                                            : "blue",
                                         // if the selected square to attack is the current square, display a red border
                                         border: selectedSquareToAttack && selectedSquareToAttack[0] === i && selectedSquareToAttack[1] === j && "2px solid red",
                                     }}
@@ -714,7 +718,11 @@ const Game = () => {
                                     key={i * 10 + j}
                                     className="border-2 border-white h-12 w-12 text-center font-bold text-2xl text-white py-2"
                                     style={{
-                                        backgroundColor: square === 8 ? "green": square === 9 ? "green" : square === 1 ? "green" : square === 2 ? "green" : square === 3 ? "green" : square === 4 ? "green" : "blue",
+                                        backgroundColor: 
+                                            playerTwo.toString() == publicKey.toString() && square === 8 ? "green" 
+                                            : square === 9 ? "green" 
+                                            : playerTwo.toString() == publicKey.toString() &&  square === 1 ? "green" 
+                                            : "blue",
                                         border: selectedSquareToAttack && selectedSquareToAttack[0] === i + 5 && selectedSquareToAttack[1] === j && "2px solid red",
                                     }}
                                     onClick={() => {
@@ -730,6 +738,7 @@ const Game = () => {
                                     {
                                         //if the square is a 0, display nothing, if it is a 7 display O, if it is a 8/9 display X, else display nothing
                                         square === 0 ? "" : square === 7 ? "O" : square === 8 || square === 9 ? "X" : ""
+                                       
                                     }
                                     {
                                         // if the selected square to attack is the current square, display the row letter from row_map and the column number
@@ -741,6 +750,14 @@ const Game = () => {
                         ))
                     }
                 </div>
+                <h2>
+                    Pieces Hit: {
+                        playerOne.toString() == publicKey.toString() ?
+                        gameState?.flat().filter((square) => square === 9).length :
+                        gameState?.flat().filter((square) => square === 8).length
+                    } / 14
+                    
+                </h2>
                 {!gameOver && (
                     <button
                         className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
