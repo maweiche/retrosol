@@ -97,12 +97,10 @@ const Game = () => {
   // Get data from the global game data account
   async function handleClickGetData() {
     setLoading(true);
-    console.log("program", program.programId.toString());
     let data = PublicKey.findProgramAddressSync(
       [Buffer.from("battleshipData")],
       program.programId,
     );
-    // console.log("data", data);
     setGameDataAccount(data[0]);
 
     const game_account_info = await connection.getAccountInfo(data[0]);
@@ -112,10 +110,6 @@ const Game = () => {
         "GameDataAccount",
         game_account_info?.data,
       );
-
-      console.log("game_data_decoded", game_data_decoded);
-
-      console.log("creator list", game_data_decoded?.allCreators);
       setAllCreators(
         game_data_decoded?.allCreators.map(
           (creator: { toString: () => any }) => {
@@ -124,10 +118,6 @@ const Game = () => {
         ),
       );
       setGameDataAccount(game_data_decoded!);
-      console.log(
-        "game_data_decoded",
-        game_data_decoded.allCreators[0]?.toString(),
-      );
     }
   }
 
@@ -146,21 +136,12 @@ const Game = () => {
       const treasure_account_info = await connection.getAccountInfo(
         treasure[0],
       );
-      console.log(treasure_account_info);
 
       if (treasure_account_info != null) {
         const decoded = program.coder.accounts.decode(
           "ChestVaultAccount",
           treasure_account_info?.data,
         );
-
-        console.log("entry fee", decoded.entryFee.toString());
-        console.log("player one", decoded.scoreSheet.playerOne.toString());
-        console.log("player two", decoded.scoreSheet.playerTwo.toString());
-        console.log("player turn", decoded.scoreSheet.currentMove.toString());
-        console.log("game over", decoded.scoreSheet.gameOver);
-        console.log("winner", decoded.scoreSheet.winner?.toString());
-        console.log("game board", decoded.gameBoard);
 
         setEntryFee(decoded.entryFee.toString());
         setPlayerOne(decoded.scoreSheet.playerOne.toString());
@@ -214,8 +195,7 @@ const Game = () => {
       [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", newChestVaultAccount[0].toString());
-    console.log("entry fee", entry_fee_as_bn.toString());
+
     const transaction = await program.methods
       .initializeGameData(entry_fee_as_bn)
       .accounts({
@@ -250,7 +230,6 @@ const Game = () => {
       [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", chestVaultAccount[0].toString());
     const transaction = await program.methods
       .playerJoinsGame()
       .accounts({
@@ -403,7 +382,6 @@ const Game = () => {
 
   // Game functions
   async function handleClickSelectCreator(creator: string) {
-    console.log("selecting creator", creator);
     setSelectedCreator(creator);
   }
 
@@ -417,19 +395,7 @@ const Game = () => {
         }
       }
     }
-    // } else if (playerTwo.toString() == publicKey.toString()){
-    //     for (let i = 5; i < 10; i++) {
-    //         for (let j = 0; j < 10; j++) {
-    //             if (placedShips[i][j] !== 0) {
-    //                 total += 1;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // if the total is 14 then we have to check and make sure that the ships are placed correctly
-    // meaning a square that = 1 must have a square to the right or left that = 1 or a square above or below that = 1
-    // if not, then we have to notify the user that the ships are not placed correctly
+  
     if (total == 14) {
       if (playerOne.toString() == publicKey.toString()) {
         for (let i = 0; i < 5; i++) {
@@ -670,10 +636,8 @@ const Game = () => {
             : ""}
         </p>
         <div
-          // display a 10x10 grid of squares with borders, size should be 12px x 12px
           className="grid grid-cols-10 gap-0"
         >
-          {/* for each square, display a div with a border */}
           {gameState?.slice(0, 5).map((row, i) =>
             row.map((square, j) => (
               <div
@@ -690,7 +654,6 @@ const Game = () => {
                             square === 1
                           ? "green"
                           : "blue",
-                  // if the selected square to attack is the current square, display a red border
                   border:
                     selectedSquareToAttack &&
                     selectedSquareToAttack[0] === i &&
@@ -706,8 +669,6 @@ const Game = () => {
                     playerTurn.toString() == publicKey.toString()
                   ) {
                     setSelectedSquareToAttack([i, j]);
-                    // console log the square that was clicked [row, col]
-                    console.log([i, j]);
                   }
                 }}
               >
@@ -719,7 +680,6 @@ const Game = () => {
                       ? "X"
                       : ""}
                 {
-                  // if the selected square to attack is the current square, display the row letter from row_map and the column number
                   !selectedSquareToAttack
                     ? ""
                     : selectedSquareToAttack[0] === i &&
@@ -755,7 +715,6 @@ const Game = () => {
                     "2px solid red",
                 }}
                 onClick={() => {
-                  // if the square isn't a 8, 8, or 9, set the selected square to attack to the current square
                   if (
                     square !== 7 &&
                     square !== 8 &&
@@ -764,13 +723,10 @@ const Game = () => {
                     playerTurn.toString() == publicKey.toString()
                   ) {
                     setSelectedSquareToAttack([i + 5, j]);
-                    // console log the square that was clicked [row, col]
-                    console.log([i + 5, j]);
                   }
                 }}
               >
                 {
-                  //if the square is a 0, display nothing, if it is a 7 display O, if it is a 8/9 display X, else display nothing
                   square === 0
                     ? ""
                     : square === 7
@@ -780,7 +736,6 @@ const Game = () => {
                         : ""
                 }
                 {
-                  // if the selected square to attack is the current square, display the row letter from row_map and the column number
                   !selectedSquareToAttack
                     ? ""
                     : selectedSquareToAttack[0] === i + 5 &&
@@ -803,7 +758,6 @@ const Game = () => {
           <button
             className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => {
-              // if the selected square to attack is not null, attack the square
               if (selectedSquareToAttack) {
                 attackSquare(selectedSquareToAttack);
               }
@@ -861,7 +815,6 @@ const Game = () => {
     if (publicKey && gameState) {
       checkPlacementTotal().then((total) => {
         setPlacementTotal(total);
-        console.log("placement total", total);
       });
     }
   }, [placedShips]);
@@ -880,7 +833,6 @@ const Game = () => {
 
   useEffect(() => {
     if (!chestVaultAccountFetched) return;
-    console.log("chestVault hooked");
     const subscriptionId = connection.onAccountChange(
       chestVaultAccountFetched as PublicKey,
       (accountInfo) => {
@@ -888,9 +840,6 @@ const Game = () => {
           "ChestVaultAccount",
           accountInfo.data,
         );
-
-        console.log("updating......");
-        console.log(decoded);
         setGameState(decoded.gameBoard);
         setWinner(
           decoded.scoreSheet.winner?.toString() !=
@@ -899,10 +848,6 @@ const Game = () => {
             : "No Winner Yet",
         );
         setGameOver(decoded.scoreSheet.gameOver);
-        console.log(
-          "player turn: ",
-          decoded.scoreSheet.currentMove?.toString(),
-        );
         setPlayerTurn(decoded.scoreSheet.currentMove?.toString());
       },
     );

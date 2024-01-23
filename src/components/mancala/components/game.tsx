@@ -37,12 +37,10 @@ const Game = () => {
 
   async function handleClickGetData() {
     setLoading(true);
-    console.log("program", program.programId.toString());
     let data = PublicKey.findProgramAddressSync(
       [Buffer.from("mancalaData")],
       program.programId,
     );
-    // console.log("data", data);
     setGameDataAccount(data[0]);
 
     const game_account_info = await connection.getAccountInfo(data[0]);
@@ -53,9 +51,6 @@ const Game = () => {
         game_account_info?.data,
       );
 
-      console.log("game_data_decoded", game_data_decoded);
-
-      console.log("creator list", game_data_decoded?.allAuthorities);
       setListOfCreators(
         game_data_decoded?.allAuthorities.map(
           (creator: { toString: () => any }) => {
@@ -64,10 +59,6 @@ const Game = () => {
         ),
       );
       setGameDataAccount(game_data_decoded);
-      console.log(
-        "game_data_decoded",
-        game_data_decoded.allAuthorities[0].toString(),
-      );
     }
   }
 
@@ -75,26 +66,6 @@ const Game = () => {
     const game_account_info = await connection.getAccountInfo(
       globalLevel1GameDataAccount,
     );
-    console.log(game_account_info);
-    // decode the game_account_info and get the listOfCreators
-    // setListOfCreators(listOfCreators);
-
-    // const subscriptionId = connection.onAccountChange(
-    //     globalLevel1GameDataAccount,
-    //     (accountInfo) => {
-    //       const decoded = program.coder.accounts.decode(
-    //         "GameDataAccount",
-    //         accountInfo.data,
-    //       );
-    //       console.log("creator list", decoded.allCreators);
-    //       setListOfCreators(
-    //         decoded?.allCreators.map((creator: { toString: () => any; }) => {
-    //           return creator.toString();
-    //         }),
-    //       );
-    //       setGameDataAccount(decoded);
-    //     }
-    // );
   }
 
   async function getGameState() {
@@ -111,22 +82,12 @@ const Game = () => {
       const treasure_account_info = await connection.getAccountInfo(
         treasure[0],
       );
-      console.log(treasure_account_info);
 
       if (treasure_account_info != null) {
         const decoded = program.coder.accounts.decode(
           "ChestVaultAccount",
           treasure_account_info?.data,
         );
-
-        console.log("entry fee", decoded.entryFee.toString());
-        console.log("player one", decoded.scoreSheet.playerOne.toString());
-        console.log("player two", decoded.scoreSheet.playerTwo.toString());
-        console.log("player turn", decoded.scoreSheet.currentMove.toString());
-        console.log("game over", decoded.scoreSheet.gameOver);
-        console.log("winner", decoded.scoreSheet.winner.toString());
-        console.log("game board", decoded.gameBoard);
-
         setEntryFee(decoded.entryFee.toString());
         setPlayerOne(decoded.scoreSheet.playerOne.toString());
         setPlayerTwo(decoded.scoreSheet.playerTwo.toString());
@@ -140,7 +101,6 @@ const Game = () => {
   }
 
   async function handleClickSelectCreator(creator: string) {
-    console.log("selecting creator", creator);
     setSelectedCreator(creator);
   }
 
@@ -185,8 +145,7 @@ const Game = () => {
       [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", newChestVaultAccount[0].toString());
-    console.log("entry fee", entry_fee_as_bn.toString());
+    
     const transaction = await program.methods
       .initializeGameData(entry_fee_as_bn)
       .accounts({
@@ -217,7 +176,6 @@ const Game = () => {
       [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", chestVaultAccount[0].toString());
     const transaction = await program.methods
       .playerJoinsGame()
       .accounts({
@@ -248,7 +206,6 @@ const Game = () => {
       [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", chestVaultAccount[0].toString());
     const transaction = await program.methods
       .makeMove(selectedPit)
       .accounts({
@@ -278,7 +235,6 @@ const Game = () => {
       [Buffer.from("chestVault"), creator_pubkey?.toBuffer() as any],
       program.programId,
     );
-    console.log("chest vault account", chestVaultAccount[0].toString());
     const transaction = await program.methods
       .withdraw()
       .accounts({
@@ -349,31 +305,6 @@ const Game = () => {
           </div>
           <div className="flex flex-col items-center">
             <div className="flex justify-around">
-              {" "}
-              {/* Player 2's pits */}
-              {/* 
-                                map the gameState.slice(8,14) but in reverse 
-                                the gameState indexes should be:
-                                13, 12, 11, 10, 9, 8
-                            */}
-              {/* {gameState.slice(8, 14).map((pit, index) => (
-                                <div 
-                                    key={index} 
-                                    className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
-                                    style={{
-                                        borderColor: index + 8 === selectedPit ? "#66ff00" : "white"
-                                    }}
-                                    onClick={() => {
-                                        if (playerTurn === playerTwo) {
-                                            setSelectedPit(index + 8),
-                                            console.log(index + 8)
-                                        }
-                                    }}
-                                    aria-disabled={playerTurn === playerTwo ? false : true}
-                                >
-                                    {pit}
-                                </div>
-                            ))} */}
               <div
                 className="w-12 h-12 border-2 border-white flex items-center justify-center m-2"
                 style={{
@@ -565,7 +496,6 @@ const Game = () => {
           "GameDataAccount",
           accountInfo.data,
         );
-        console.log("authority list", decoded.allAuthorities);
         setListOfCreators(
           decoded?.allAuthorities.map((authority: { toString: () => any }) => {
             return authority.toString();
@@ -582,7 +512,6 @@ const Game = () => {
 
   useEffect(() => {
     if (!chestVaultAccountFetched) return;
-    console.log("chestVault hooked");
     const subscriptionId = connection.onAccountChange(
       chestVaultAccountFetched as PublicKey,
       (accountInfo) => {
@@ -590,9 +519,6 @@ const Game = () => {
           "ChestVaultAccount",
           accountInfo.data,
         );
-
-        console.log("updating......");
-        console.log(decoded);
         setGameState(decoded.gameBoard);
         setWinner(
           decoded.scoreSheet.winner.toString() !=
