@@ -145,7 +145,7 @@ const Game = () => {
       [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
       program.programId,
     );
-    
+
     const transaction = await program.methods
       .initializeGameData(entry_fee_as_bn)
       .accounts({

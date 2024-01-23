@@ -238,7 +238,7 @@ const Game = () => {
           ) {
             setPlayerHasPaid(true);
             setPlayerIndexInGameList(player_index);
-            
+
             if (list_of_players[player_index].incorrectGuesses?.length < 6) {
               list_of_players[player_index].correctLetters.forEach(
                 (letter: string) => {
@@ -304,7 +304,7 @@ const Game = () => {
       return;
     }
     const new_secret_word = await hashWord(secretWord);
-    
+
     notify({
       type: "loading",
       message: "loading",
@@ -312,7 +312,6 @@ const Game = () => {
     });
 
     if (publicKey) {
-      
       const reward_as_bn = new anchor.BN(
         // parse chestReward as a float and convert to lamports
         parseFloat(chestReward!) * anchor.web3.LAMPORTS_PER_SOL,
@@ -322,7 +321,7 @@ const Game = () => {
         parseFloat(entryFee!) * anchor.web3.LAMPORTS_PER_SOL,
       );
       const max_attempts = parseInt(maxAttempts!);
-      
+
       const newChestVaultAccount = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
         program.programId,
@@ -331,7 +330,7 @@ const Game = () => {
         [Buffer.from("hangmanData")],
         program.programId,
       );
-      
+
       const transaction = await program.methods
         .initializeLevelOne(
           reward_as_bn,
@@ -359,7 +358,7 @@ const Game = () => {
       });
       setCreatingNewGame(false);
       handleClickGetData();
-      
+
       console.log(
         "txHash",
         `https://solana.fm/tx/${txHash}/?cluster=devnet-solana`,
@@ -594,7 +593,6 @@ const Game = () => {
           body: JSON.stringify({ instruction: "withdraw" }),
         });
         const data = await response.json();
-
       } catch (error) {
         notify({ type: "error", message: "Error!", description: "Error!" });
         console.error(error);
@@ -911,7 +909,7 @@ const Game = () => {
           );
           setCorrectLetters(decoded.players[player_index].correctLetters);
           setIncorrectGuesses(decoded.players[player_index].incorrectGuesses);
-          
+
           let newGuessedLetters = [];
           newGuessedLetters.push(
             ...decoded.players[player_index].correctLetters,
@@ -982,8 +980,7 @@ const Game = () => {
     if (publicKey && creatingNewGame) {
       const creator_key = new PublicKey(publicKey.toString());
       if (globalLevel1GameDataAccount) {
-        fetchData(globalLevel1GameDataAccount).then((data) => {
-        });
+        fetchData(globalLevel1GameDataAccount).then((data) => {});
       } else {
         let data = PublicKey.findProgramAddressSync(
           [Buffer.from("hangmanData")],

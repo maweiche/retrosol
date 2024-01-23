@@ -395,7 +395,7 @@ const Game = () => {
         }
       }
     }
-  
+
     if (total == 14) {
       if (playerOne.toString() == publicKey.toString()) {
         for (let i = 0; i < 5; i++) {
@@ -635,9 +635,7 @@ const Game = () => {
                 : "Player Two")
             : ""}
         </p>
-        <div
-          className="grid grid-cols-10 gap-0"
-        >
+        <div className="grid grid-cols-10 gap-0">
           {gameState?.slice(0, 5).map((row, i) =>
             row.map((square, j) => (
               <div
@@ -679,14 +677,12 @@ const Game = () => {
                     : square === 8 || square === 9
                       ? "X"
                       : ""}
-                {
-                  !selectedSquareToAttack
-                    ? ""
-                    : selectedSquareToAttack[0] === i &&
-                        selectedSquareToAttack[1] === j
-                      ? row_map[i] + (j + 1)
-                      : ""
-                }
+                {!selectedSquareToAttack
+                  ? ""
+                  : selectedSquareToAttack[0] === i &&
+                      selectedSquareToAttack[1] === j
+                    ? row_map[i] + (j + 1)
+                    : ""}
               </div>
             )),
           )}
@@ -726,23 +722,19 @@ const Game = () => {
                   }
                 }}
               >
-                {
-                  square === 0
-                    ? ""
-                    : square === 7
-                      ? "O"
-                      : square === 8 || square === 9
-                        ? "X"
-                        : ""
-                }
-                {
-                  !selectedSquareToAttack
-                    ? ""
-                    : selectedSquareToAttack[0] === i + 5 &&
-                        selectedSquareToAttack[1] === j
-                      ? row_map[i + 5] + (j + 1)
-                      : ""
-                }
+                {square === 0
+                  ? ""
+                  : square === 7
+                    ? "O"
+                    : square === 8 || square === 9
+                      ? "X"
+                      : ""}
+                {!selectedSquareToAttack
+                  ? ""
+                  : selectedSquareToAttack[0] === i + 5 &&
+                      selectedSquareToAttack[1] === j
+                    ? row_map[i + 5] + (j + 1)
+                    : ""}
               </div>
             )),
           )}
