@@ -7,10 +7,7 @@ const Battleship: NextPage = (props) => {
     <div>
       <Head>
         <title>Battleship - Retro Sol</title>
-        <meta
-          name="description"
-          content="Battleship Game"
-        />
+        <meta name="description" content="Battleship Game" />
       </Head>
       <BattleshipView />
     </div>

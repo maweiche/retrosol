@@ -7,10 +7,7 @@ const Hangman: NextPage = (props) => {
     <div>
       <Head>
         <title>Mancala - Retro Sol</title>
-        <meta
-          name="description"
-          content="Mancala Game"
-        />
+        <meta name="description" content="Mancala Game" />
       </Head>
       <MancalaView />
     </div>

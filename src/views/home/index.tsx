@@ -1,41 +1,37 @@
 // Next, React
-import { FC, useEffect, useState } from 'react';
-import Landing from '../../components/landing/landing';
-import Overview from '../../components/overview/overview';
-import Showcase from '../../components/showcase/showcase';
-import Faq from '../../components/faq/faq';
-import Link from 'next/link';
-
+import { FC, useEffect, useState } from "react";
+import Landing from "../../components/landing/landing";
+import Overview from "../../components/overview/overview";
+import Showcase from "../../components/showcase/showcase";
+import Faq from "../../components/faq/faq";
+import Link from "next/link";
 
 // Wallet
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 
 // Components
-import { RequestAirdrop } from '../../components/RequestAirdrop';
-import pkg from '../../../package.json';
+import { RequestAirdrop } from "../../components/RequestAirdrop";
+import pkg from "../../../package.json";
 
 // Store
-import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
+import useUserSOLBalanceStore from "../../stores/useUserSOLBalanceStore";
 
-export const HomeView: FC = ({ }) => {
+export const HomeView: FC = ({}) => {
   const wallet = useWallet();
   const { connection } = useConnection();
 
-  const balance = useUserSOLBalanceStore((s) => s.balance)
-  const { getUserSOLBalance } = useUserSOLBalanceStore()
+  const balance = useUserSOLBalanceStore((s) => s.balance);
+  const { getUserSOLBalance } = useUserSOLBalanceStore();
 
   useEffect(() => {
     if (wallet.publicKey) {
-      console.log(wallet.publicKey.toBase58())
-      getUserSOLBalance(wallet.publicKey, connection)
+      console.log(wallet.publicKey.toBase58());
+      getUserSOLBalance(wallet.publicKey, connection);
     }
-  }, [wallet.publicKey, connection, getUserSOLBalance])
+  }, [wallet.publicKey, connection, getUserSOLBalance]);
 
   return (
-
-    <div 
-      className="w-full mx-auto p-4"
-    >
+    <div className="w-full mx-auto p-4">
       {/* <div className="md:hero-content flex flex-col">
         <div className='mt-6'>
         <div className='text-sm font-normal align-bottom text-right text-slate-600 mt-4'>v{pkg.version}</div>

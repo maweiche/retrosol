@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-'use client'
+"use client";
 import React, { use, useDebugValue } from "react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
@@ -14,14 +14,13 @@ import {
 import { hash, compare } from "bcryptjs";
 import * as anchor from "@project-serum/anchor";
 import { notify } from "../../../utils/notifications";
-require('@solana/wallet-adapter-react-ui/styles.css');
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 const WalletMultiButton = dynamic(
   async () =>
     (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
-  { ssr: false }
+  { ssr: false },
 );
-
 
 type GameDataAccount = {
   solved: boolean;
@@ -42,9 +41,12 @@ const Game = () => {
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listOfCreators, setListOfCreators] = useState<Array<PublicKey>>([]);
-  const [selectedCreator, setSelectedCreator] = useState<PublicKey | null | string>(null);
+  const [selectedCreator, setSelectedCreator] = useState<
+    PublicKey | null | string
+  >(null);
   const [listOfPlayers, setListOfPlayers] = useState([]);
-  const [globalLevel1GameDataAccount, setGlobalLevel1GameDataAccount] = useState<PublicKey | null>(null);
+  const [globalLevel1GameDataAccount, setGlobalLevel1GameDataAccount] =
+    useState<PublicKey | null>(null);
   const [message, setMessage] = useState("");
   const [playerPositionOnChain, setPlayerPositionOnChain] = useState("");
   const [incorrectGuesses, setIncorrectGuesses] = useState("");
@@ -72,11 +74,15 @@ const Game = () => {
   const [chestReward, setChestReward] = useState<string>("");
   const [entryFee, setEntryFee] = useState<string>("");
   const [maxAttempts, setMaxAttempts] = useState<string>("");
-  const [playerIndexInGameList, setPlayerIndexInGameList] = useState<number | null>(null);
+  const [playerIndexInGameList, setPlayerIndexInGameList] = useState<
+    number | null
+  >(null);
 
   const [gameDataAccount, setGameDataAccount] = useState<any | null>(null);
 
-  const [chestVaultAccount, setChestVaultAccount] = useState<PublicKey | null>(null);
+  const [chestVaultAccount, setChestVaultAccount] = useState<PublicKey | null>(
+    null,
+  );
 
   // game selection logic here
   async function handleClickSelectCreator(creator: any) {
@@ -90,128 +96,138 @@ const Game = () => {
   // hangman game logic here
 
   async function handleClickGetData(creator: string) {
-        setLoading(true);
-        const main_key = new PublicKey(
-            "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
-            // "HZxkqBTnXtAYoFTg2puo9KyiNN42E8Sd2Kh1jq3vT29u"
+    setLoading(true);
+    const main_key = new PublicKey(
+      "7wK3jPMYjpZHZAghjersW6hBNMgi9VAGr75AhYRqR2n",
+      // "HZxkqBTnXtAYoFTg2puo9KyiNN42E8Sd2Kh1jq3vT29u"
+    );
+    let data = PublicKey.findProgramAddressSync(
+      [Buffer.from("hangmanData")],
+      program.programId,
+    );
+    // console.log("data", data);
+    setGlobalLevel1GameDataAccount(data[0]);
+
+    const game_account_info = await connection.getAccountInfo(data[0]);
+
+    const creator_key = new PublicKey(creator);
+    const treasure = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("chestVault"), creator_key.toBuffer()],
+      program.programId,
+    );
+    // console.log("treasure", treasure[0].toString());
+    setChestVaultAccount(treasure[0]);
+
+    const treasure_account_info = await connection.getAccountInfo(treasure[0]);
+
+    if (treasure_account_info != null) {
+      console.log(
+        "treasure_account_info",
+        treasure_account_info.owner.toString(),
+      );
+      const chest_vault_account = await program.coder.accounts.decode(
+        "ChestVaultAccount",
+        treasure_account_info?.data,
+      );
+      console.log("chest vault password", chest_vault_account?.password);
+      // console.log("chest vault reward", chest_vault_account?.chestReward);
+      // console.log(
+      //   "chest vault max attempts",
+      //   chest_vault_account?.maxAttemptsLeft,
+      // );
+      // console.log("chest vault entry fee", chest_vault_account?.entryFee);
+      // convert from bn to number
+      setChestRewardOnChain(chest_vault_account?.chestReward.toNumber());
+      setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
+      setEntryFeeOnChain(chest_vault_account?.entryFee.toNumber());
+      setSecretWordOnChain(chest_vault_account?.password);
+      setAuthorityOnChain(chest_vault_account?.creator.toString());
+      setPlayersOnChain(chest_vault_account?.players);
+
+      const secret_word_array = chest_vault_account?.password;
+      setSecretWordOnChainArray(secret_word_array);
+
+      const correct_letters = [];
+      // separate the secret word by (*)(*) and create an array of blanks
+      // console.log("secret_word_array", secret_word_array.split(process.env.NEXT_PUBLIC_SPLIT_KEY));
+      for (
+        let i = 0;
+        i < secret_word_array?.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
+        i++
+      ) {
+        correct_letters.push("_");
+        const blanks: string[] = [];
+        blanks.push("_");
+      }
+      setBlanks(correct_letters);
+      setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
+      // console.log(chest_vault_account?.chestReward);
+      // console.log("secret_word_array", secret_word_array);
+      console.log("players", chest_vault_account?.players);
+      const list_of_players = chest_vault_account?.players;
+      setListOfPlayers(chest_vault_account?.players);
+      // find the index of the player in the players array
+      if (list_of_players?.length > 0) {
+        // chest_vault_account?.players is an array of objects, find the index of the one that's player field matches publicKey.toString()
+        const player_index = list_of_players.findIndex(
+          (player: { player: { toString: () => string } }) => {
+            return player.player.toString() === publicKey?.toString(); //why is this returning -1?
+          },
         );
-        let data = PublicKey.findProgramAddressSync(
-            [Buffer.from("hangmanData")],
-            program.programId,
-        );
-        // console.log("data", data);
-        setGlobalLevel1GameDataAccount(data[0]);
-
-        const game_account_info = await connection.getAccountInfo(data[0]);
-
-
-            const creator_key = new PublicKey(creator);
-            const treasure = anchor.web3.PublicKey.findProgramAddressSync(
-            [Buffer.from("chestVault"), creator_key.toBuffer()],
-            program.programId,
+        console.log("player_index", player_index);
+        if (player_index != null && player_index >= 0) {
+          setPlayerIndexInGameList(player_index);
+          console.log("player_index", player_index);
+          // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
+          if (list_of_players[player_index].incorrectGuesses?.length < 6) {
+            // console.log("player info", list_of_players[player_index]);
+            list_of_players[player_index].correctLetters.forEach(
+              (letter: string) => {
+                if (letter != "_") {
+                  correctLetters.push(letter);
+                }
+              },
             );
-            // console.log("treasure", treasure[0].toString());
-            setChestVaultAccount(treasure[0]);
-
-            const treasure_account_info = await connection.getAccountInfo(
-            treasure[0],
+            // console.log("correctLetters", correctLetters);
+            setGuessesLeft(
+              6 - list_of_players[player_index].incorrectGuesses.length,
             );
-
-        if (treasure_account_info != null) {
+            // console.log("guessesLeft", 6 - list_of_players[player_index].incorrectGuesses);
+            setIncorrectGuesses(list_of_players[player_index].incorrectGuesses);
+            // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
+            setCorrectLetters(list_of_players[player_index].correctLetters);
             console.log(
-                "treasure_account_info",
-                treasure_account_info.owner.toString(),
+              "correctLetters",
+              list_of_players[player_index].correctLetters,
             );
-            const chest_vault_account = await program.coder.accounts.decode(
-                "ChestVaultAccount",
-                treasure_account_info?.data,
+            setWinner(list_of_players[player_index].isWinner);
+            guessedLetters.push(
+              ...list_of_players[player_index].correctLetters,
+              ...list_of_players[player_index].incorrectGuesses,
             );
-            console.log("chest vault password", chest_vault_account?.password);
-            // console.log("chest vault reward", chest_vault_account?.chestReward);
-            // console.log(
-            //   "chest vault max attempts",
-            //   chest_vault_account?.maxAttemptsLeft,
-            // );
-            // console.log("chest vault entry fee", chest_vault_account?.entryFee);
-            // convert from bn to number
-            setChestRewardOnChain(chest_vault_account?.chestReward.toNumber());
-            setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
-            setEntryFeeOnChain(chest_vault_account?.entryFee.toNumber());
-            setSecretWordOnChain(chest_vault_account?.password);
-            setAuthorityOnChain(chest_vault_account?.creator.toString());
-            setPlayersOnChain(chest_vault_account?.players);
 
-            const secret_word_array = chest_vault_account?.password;
-            setSecretWordOnChainArray(secret_word_array);
-
-            const correct_letters = [];
-            // separate the secret word by (*)(*) and create an array of blanks
-            // console.log("secret_word_array", secret_word_array.split(process.env.NEXT_PUBLIC_SPLIT_KEY));
-            for (let i = 0; i < secret_word_array?.split(process.env.NEXT_PUBLIC_SPLIT_KEY); i++) {
-                correct_letters.push("_");
-                const blanks: string[] = [];
-                blanks.push("_");
+            // advance the active image to the number of incorrect guesses
+            // if the player has 0 incorrect guesses, the active image should be 0
+            if (list_of_players[player_index].incorrectGuesses.length == 0) {
+              setActiveImage(0);
+            } else {
+              setActiveImage(
+                list_of_players[player_index].incorrectGuesses.length,
+              );
             }
-            setBlanks(correct_letters);
-            setMaxAttemptsOnChain(chest_vault_account?.maxAttemptsLeft);
-            // console.log(chest_vault_account?.chestReward);
-            // console.log("secret_word_array", secret_word_array);
-            console.log("players", chest_vault_account?.players);
-            const list_of_players = chest_vault_account?.players;
-            setListOfPlayers(chest_vault_account?.players);
-            // find the index of the player in the players array
-            if (list_of_players?.length > 0) {
-                // chest_vault_account?.players is an array of objects, find the index of the one that's player field matches publicKey.toString()
-                const player_index = list_of_players.findIndex((player: { player: { toString: () => string; }; }) => {
-                return player.player.toString() === publicKey?.toString(); //why is this returning -1? 
-                });
-                console.log("player_index", player_index);
-                if (player_index != null && player_index >= 0) {
-                setPlayerIndexInGameList(player_index);
-                console.log("player_index", player_index);
-                // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
-                if (list_of_players[player_index].incorrectGuesses?.length < 6) {
-                    // console.log("player info", list_of_players[player_index]);
-                    list_of_players[player_index].correctLetters.forEach((letter: string) => {
-                    if (letter != "_") {
-                        correctLetters.push(letter);
-                    }
-                    });
-                    // console.log("correctLetters", correctLetters);
-                    setGuessesLeft(
-                    6 - list_of_players[player_index].incorrectGuesses.length,
-                    );
-                    // console.log("guessesLeft", 6 - list_of_players[player_index].incorrectGuesses);
-                    setIncorrectGuesses(
-                    list_of_players[player_index].incorrectGuesses,
-                    );
-                    // console.log("incorrectGuesses", list_of_players[player_index].incorrectGuesses);
-                    setCorrectLetters(
-                    list_of_players[player_index].correctLetters,
-                    )
-                    console.log("correctLetters", list_of_players[player_index].correctLetters);
-                    setWinner(
-                    list_of_players[player_index].isWinner,
-                    )
-                    guessedLetters.push(...list_of_players[player_index].correctLetters, ...list_of_players[player_index].incorrectGuesses);
-
-                    // advance the active image to the number of incorrect guesses
-                    // if the player has 0 incorrect guesses, the active image should be 0
-                    if (list_of_players[player_index].incorrectGuesses.length == 0) {
-                    setActiveImage(0);
-                    } else {
-                    setActiveImage(list_of_players[player_index].incorrectGuesses.length);
-                    }
-                }
-                }
-            }
-        } else {
-            notify({ type: 'error', message: `Error! Game not found!`, description: 'Error!' });
+          }
         }
-    
-
-        setLoading(false);
+      }
+    } else {
+      notify({
+        type: "error",
+        message: `Error! Game not found!`,
+        description: "Error!",
+      });
     }
+
+    setLoading(false);
+  }
 
   async function hashWord(word: string) {
     let hashed_word_array = [];
@@ -222,16 +238,20 @@ const Game = () => {
       let hashed_word = await hash(secret_word_array[i], 10); //10 is the salt
       hashed_word_array.push(hashed_word);
     }
-    const new_secret_word = hashed_word_array.join(process.env.NEXT_PUBLIC_SPLIT_KEY); // dog => d(*)(*)o(*)(*)g
+    const new_secret_word = hashed_word_array.join(
+      process.env.NEXT_PUBLIC_SPLIT_KEY,
+    ); // dog => d(*)(*)o(*)(*)g
     // const new_secret_word = hashed_word_array;
     // console.log("new_secret_word", new_secret_word);
     return new_secret_word;
   }
 
-  
-
   async function handleClickPlayerStartGame() {
-    notify({ type: 'loading', message: 'Starting game...', description: 'Starting game...' });
+    notify({
+      type: "loading",
+      message: "Starting game...",
+      description: "Starting game...",
+    });
     if (publicKey) {
       // const password = secretWord
       const transaction = await program.methods
@@ -275,20 +295,23 @@ const Game = () => {
   }
 
   async function handleClickRight(letterToGuess: string) {
-    notify({ type: 'loading', message: 'Checking guess...', description: 'Checking guess...' });
+    notify({
+      type: "loading",
+      message: "Checking guess...",
+      description: "Checking guess...",
+    });
     // guessedLetters.push(letterToGuess);
     // get the secret word from the chest vault account
     let correct_letter = false;
     let correct_letter_indexes = [];
     const secret_word = secretWordOnChain;
-    const secret_word_array = secret_word.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
+    const secret_word_array = secret_word.split(
+      process.env.NEXT_PUBLIC_SPLIT_KEY,
+    );
     for (let i = 0; i < secret_word_array.length; i++) {
       let lower_case_letter = letterToGuess.toLowerCase();
       // use comparePassword to compare the letterToGuess to each letter in the secret word
-      const is_correct = await compare(
-        lower_case_letter,
-        secret_word_array[i],
-      );
+      const is_correct = await compare(lower_case_letter, secret_word_array[i]);
       // console.log(
       //   "comparing letterToGuess to secret_word_array[i]",
       //   lower_case_letter,
@@ -366,7 +389,11 @@ const Game = () => {
   }
 
   async function handleClickClaimPrize() {
-    notify({ type: 'loading', message: 'Claiming prize...', description: 'Claiming prize...' });
+    notify({
+      type: "loading",
+      message: "Claiming prize...",
+      description: "Claiming prize...",
+    });
     if (publicKey) {
       const transaction = await program.methods
         .getChestReward()
@@ -392,7 +419,11 @@ const Game = () => {
       });
 
       // console.log("confirmTransaction", confirmTransaction);
-      notify({ type: 'success', message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`, description: 'Success!' });
+      notify({
+        type: "success",
+        message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
+        description: "Success!",
+      });
     } else {
       try {
         const response = await fetch("/api/sendTransaction", {
@@ -403,7 +434,7 @@ const Game = () => {
         const data = await response.json();
         // console.log(data);
       } catch (error) {
-        notify({ type: 'error', message: `Error!`, description: 'Error!' });
+        notify({ type: "error", message: `Error!`, description: "Error!" });
         console.error(error);
       }
     }
@@ -411,7 +442,11 @@ const Game = () => {
   }
 
   async function handleClickWithdraw() {
-    notify({ type: 'success', message: 'Withdrawing!', description: 'Withdrawing!' });
+    notify({
+      type: "success",
+      message: "Withdrawing!",
+      description: "Withdrawing!",
+    });
     if (publicKey) {
       const transaction = await program.methods
         .withdraw()
@@ -437,7 +472,11 @@ const Game = () => {
       });
 
       // console.log("confirmTransaction", confirmTransaction);
-      notify({ type: 'success', message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`, description: 'Success!' });
+      notify({
+        type: "success",
+        message: `Success! https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
+        description: "Success!",
+      });
     } else {
       try {
         const response = await fetch("/api/sendTransaction", {
@@ -448,7 +487,7 @@ const Game = () => {
         const data = await response.json();
         // console.log(data);
       } catch (error) {
-        notify({ type: 'error', message: 'Error!', description: 'Error!' });
+        notify({ type: "error", message: "Error!", description: "Error!" });
         console.error(error);
       }
     }
@@ -470,7 +509,7 @@ const Game = () => {
   async function getTreasureAccount() {
     const treasure = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("chestVault"), publicKey?.toBuffer() as any],
-      program.programId
+      program.programId,
     );
     // console.log("treasure", treasure[0].toString());
     setChestVaultAccount(treasure[0]);
@@ -502,32 +541,25 @@ const Game = () => {
 
   // **********************************
 
-
   // GAME BOARD RENDER SECTION
 
   const renderGameBoard = () => {
     return (
-      <div
-        className='flex flex-col justify-center items-center space-y-2'
-      >
+      <div className="flex flex-col justify-center items-center space-y-2">
         <img
           src={activeImage ? `/hangman${activeImage}.png` : "/hangman0.png"}
           alt="hangman"
           width="200"
         />
         {secretWordOnChain?.length > 0 && (
-          <div
-            className='flex flex-row justify-center items-center space-y-2'
-          >
-            <div
-              className='flex flex-row justify-center items-center'
-            >
+          <div className="flex flex-row justify-center items-center space-y-2">
+            <div className="flex flex-row justify-center items-center">
               {correctLetters.map((letter, index) => {
                 return (
                   <div
                     key={index}
                     // font size 2xl
-                    className='m-2 text-6xl'
+                    className="m-2 text-6xl"
                   >
                     {/* map out each letter with a space in between, do not put space after last letter */}
                     {index < correctLetters?.length - 1 ? (
@@ -544,7 +576,7 @@ const Game = () => {
                 return (
                   <div
                     key={index}
-                    className='flex flex-row justify-center items-center space-y-2'
+                    className="flex flex-row justify-center items-center space-y-2"
                   >
                     {letter}
                   </div>
@@ -563,77 +595,63 @@ const Game = () => {
           </p>
           <p>Game Attempts Left: {maxAttemptsOnChain}</p>
           {maxAttemptsOnChain > 0 ? (
-            <div
-              className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2 m-2'
-            >
-              
+            <div className="flex flex-col justify-center items-center space-y-2 border-2 border-white p-2 m-2">
               <p>Jackpot: {chestRewardOnChain / LAMPORTS_PER_SOL}</p>
               <p>Entry Fee: {entryFeeOnChain / LAMPORTS_PER_SOL}</p>
-              
             </div>
           ) : (
-            <p
-              className='flex flex-col justify-center items-center space-y-2 text-red-500'
-            >Game Limit Reached</p>
+            <p className="flex flex-col justify-center items-center space-y-2 text-red-500">
+              Game Limit Reached
+            </p>
           )}
           {/* {maxAttemptsOnChain > 0 && (
             <> */}
-              {playerIndexInGameList >= 0 && playerIndexInGameList != null ? (
-                <div
-                  className='flex flex-col justify-center items-center space-y-2'
+          {playerIndexInGameList >= 0 && playerIndexInGameList != null ? (
+            <div className="flex flex-col justify-center items-center space-y-2">
+              <p>Guesses left: {guessesLeft}</p>
+              <p>
+                Guessed letters:{" "}
+                {// string of correct letters seperated by a space != _ and incorrectGuesses
+                guessedLetters?.filter((letter) => {
+                  return letter != "_" && letter != incorrectGuesses;
+                })}
+              </p>
+              {/* display correct letters seperated by a space */}
+              {/* display the correct letters underlined */}
+              <p>Correct letters: {correctLetters}</p>
+              <div className="flex flex-col justify-center items-center space-y-2 border-2 border-white p-6">
+                <p className="underline">Guess a letter</p>
+                <input
+                  type="p"
+                  className="text-black p-2 w-10 text-center"
+                  maxLength={1}
+                  value={letterToGuess}
+                  onChange={(event) => {
+                    if (!guessedLetters?.includes(event.target.value)) {
+                      setLetterToGuess(event.target.value);
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => handleClickRight(letterToGuess)}
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
                 >
-                  <p>Guesses left: {guessesLeft}</p>
-                  <p>Guessed letters: {
-                      // string of correct letters seperated by a space != _ and incorrectGuesses
-                      guessedLetters?.filter((letter) => {
-                        return letter != "_" && letter != incorrectGuesses;
-                      })
-                    }</p>
-                  {/* display correct letters seperated by a space */}
-                  {/* display the correct letters underlined */}
-                  <p>Correct letters: {correctLetters}</p>
-                  <div
-                    className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-6'
-                  >
-                    <p
-                      className='underline'
-                    >
-                      Guess a letter
-                    </p>
-                    <input
-                      type="p"
-                      className='text-black p-2 w-10 text-center'
-                      maxLength={1}
-                      value={letterToGuess}
-                      onChange={(event) => {
-                        if (!guessedLetters?.includes(event.target.value)) {
-                          setLetterToGuess(event.target.value);
-                        }
-                      }}
-                    />
-                    <button
-                      onClick={() => handleClickRight(letterToGuess)}
-                      className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'
-                    >
-                      Guess
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className='flex flex-col justify-center items-center space-y-2 border-2 border-white p-2'
-                >
-                  <button
-                    // isLoading={loadingInitialize}
-                    onClick={handleClickPlayerStartGame}
-                  >
-                    Start Game
-                  </button>
-                </div>
-              )}
-            {/* </>
+                  Guess
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col justify-center items-center space-y-2 border-2 border-white p-2">
+              <button
+                // isLoading={loadingInitialize}
+                onClick={handleClickPlayerStartGame}
+              >
+                Start Game
+              </button>
+            </div>
+          )}
+          {/* </>
           )} */}
-          
         </div>
       </div>
     );
@@ -643,7 +661,7 @@ const Game = () => {
 
   // USE EFFECTS
   useEffect(() => {
-    const handleKeyDown = (event: { key: string; }) => {
+    const handleKeyDown = (event: { key: string }) => {
       if (event.key === "Enter") {
         handleClickRight(letterToGuess);
       }
@@ -685,7 +703,7 @@ const Game = () => {
         );
         // console.log("creator list", decoded.allCreators);
         setListOfCreators(
-          decoded?.allCreators.map((creator: { toString: () => any; }) => {
+          decoded?.allCreators.map((creator: { toString: () => any }) => {
             return creator.toString();
           }),
         );
@@ -697,7 +715,6 @@ const Game = () => {
       connection.removeAccountChangeListener(subscriptionId);
     };
   }, [connection, globalLevel1GameDataAccount, program]);
-
 
   useEffect(() => {
     if (!chestVaultAccount) return;
@@ -722,17 +739,23 @@ const Game = () => {
         // console.log("player_vector", player_vector);
         let player_is_in_game = false;
         // find the index of publicKey that matches player_vector[i].player.toString()
-        const player_index = player_vector.findIndex((player: { player: { toString: () => string; }; }) => {
-          player_is_in_game = true;
-          return player.player.toString() === publicKey.toString();
-        });
+        const player_index = player_vector.findIndex(
+          (player: { player: { toString: () => string } }) => {
+            player_is_in_game = true;
+            return player.player.toString() === publicKey.toString();
+          },
+        );
         // if the player position is greater than current_player_position then setCorrectAnswer to true
         if (
           player_is_in_game &&
           player_vector[player_index].player_position > current_player_position
         ) {
           setCorrectAnswer(true);
-          notify({ type: 'success', message: `Correct!`, description: 'Correct!' });
+          notify({
+            type: "success",
+            message: `Correct!`,
+            description: "Correct!",
+          });
         } else if (
           player_vector[player_index].incorrectGuesses.length >
           current_incorrect_guesses.length
@@ -740,9 +763,17 @@ const Game = () => {
           setIncorrectAnswer(true);
           setGuessesLeft(guessesLeft - 1);
           setActiveImage(activeImage + 1);
-          notify({ type: 'success', message: `Incorrect Guess!`, description: 'Incorrect!' });
+          notify({
+            type: "success",
+            message: `Incorrect Guess!`,
+            description: "Incorrect!",
+          });
         } else if (!player_is_in_game) {
-          notify({ type: 'error', message: `You are not in this game!`, description: 'Error!' });
+          notify({
+            type: "error",
+            message: `You are not in this game!`,
+            description: "Error!",
+          });
         }
         if (player_is_in_game) {
           setPlayerPositionOnChain(
@@ -752,16 +783,25 @@ const Game = () => {
           setIncorrectGuesses(decoded.players[player_index].incorrectGuesses);
           // guessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
           // setGuessedLetters to the correct letters and incorrect guesses
-          console.log("decoded.players[player_index].correctLetters", decoded.players[player_index].correctLetters);
-          console.log("decoded.players[player_index].incorrectGuesses", decoded.players[player_index].incorrectGuesses);
-          let newGuessedLetters = [];
-          newGuessedLetters.push(...decoded.players[player_index].correctLetters, ...decoded.players[player_index].incorrectGuesses);
-          setGuessedLetters(
-            newGuessedLetters,
+          console.log(
+            "decoded.players[player_index].correctLetters",
+            decoded.players[player_index].correctLetters,
           );
+          console.log(
+            "decoded.players[player_index].incorrectGuesses",
+            decoded.players[player_index].incorrectGuesses,
+          );
+          let newGuessedLetters = [];
+          newGuessedLetters.push(
+            ...decoded.players[player_index].correctLetters,
+            ...decoded.players[player_index].incorrectGuesses,
+          );
+          setGuessedLetters(newGuessedLetters);
           setWinner(decoded.players[player_index].isWinner);
         }
-        const secret_word_array = decoded.password.split(process.env.NEXT_PUBLIC_SPLIT_KEY);
+        const secret_word_array = decoded.password.split(
+          process.env.NEXT_PUBLIC_SPLIT_KEY,
+        );
         setSecretWordOnChainArray(secret_word_array);
 
         // if playerPosition has changed (increased) then add the letterToGuess to correctLetters
@@ -783,16 +823,15 @@ const Game = () => {
     return () => {
       connection.removeAccountChangeListener(subscriptionId);
     };
-    
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, chestVaultAccount, program]);
 
-//   useEffect(() => {
-//     if (publicKey) {
-//       handleClickGetData();
-//     }
-//   }, [selectedCreator]);
+  //   useEffect(() => {
+  //     if (publicKey) {
+  //       handleClickGetData();
+  //     }
+  //   }, [selectedCreator]);
 
   useEffect(() => {
     if (publicKey && chestVaultAccount == null) {
@@ -836,68 +875,70 @@ const Game = () => {
         setGlobalLevel1GameDataAccount(data[0]);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey, globalLevel1GameDataAccount, selectedCreator, creatingNewGame, chestVaultAccount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    publicKey,
+    globalLevel1GameDataAccount,
+    selectedCreator,
+    creatingNewGame,
+    chestVaultAccount,
+  ]);
 
-//   get the slug that is after `creator=` from the url
-    useEffect(() => {
-        setLoading(true);
-        const url = window.location.href;
-        console.log("url", url);
-        const params = new URL(url).searchParams;
-        const creator = params.get("creator");
-        console.log("creator", creator);
-        if (creator) {
-            setSelectedCreator(creator);
-            handleClickGetData(creator);
-        }
-    }, []);
+  //   get the slug that is after `creator=` from the url
+  useEffect(() => {
+    setLoading(true);
+    const url = window.location.href;
+    console.log("url", url);
+    const params = new URL(url).searchParams;
+    const creator = params.get("creator");
+    console.log("creator", creator);
+    if (creator) {
+      setSelectedCreator(creator);
+      handleClickGetData(creator);
+    }
+  }, []);
 
   return (
     <div>
       {!loading && (
-            <div
-              className='flex flex-col justify-center items-center space-y-2'
-            >
-              {/* <button 
+        <div className="flex flex-col justify-center items-center space-y-2">
+          {/* <button 
                 onClick={handleClickGetData(selectedCreator as string)}
                 // give a white border
                 className='border-2 border-white p-2'
               >
                 Get Data
               </button> */}
-              <div>
-                {!loading && chestVaultAccount && selectedCreator != null && (
-                  <div className='flex flex-col justify-center items-center'>
-                    {renderGameBoard()}
-                  </div>
-                )}
+          <div>
+            {!loading && chestVaultAccount && selectedCreator != null && (
+              <div className="flex flex-col justify-center items-center">
+                {renderGameBoard()}
               </div>
+            )}
+          </div>
 
-              {winner && (
-                <div
-                  className='flex flex-col justify-center items-center space-y-2'
-                >
-                  <h1>You won!</h1>
-                  <button
-                    className='border-2 border-white p-2 bg-green-500 hover:bg-green-700'
-                    onClick={handleClickClaimPrize}
-                  >
-                    Claim Prize
-                  </button>
-                </div>
-              )}
-              {listOfCreators &&
-                chestVaultAccount &&
-                selectedCreator?.toString() == publicKey?.toString() && (
-                  <button
-                    onClick={handleClickWithdraw}
-                    className='border-2 border-white p-2 bg-green-500 hover:bg-green-700'
-                  >
-                    Withdraw all funds in chest
-                  </button>
-                )}
+          {winner && (
+            <div className="flex flex-col justify-center items-center space-y-2">
+              <h1>You won!</h1>
+              <button
+                className="border-2 border-white p-2 bg-green-500 hover:bg-green-700"
+                onClick={handleClickClaimPrize}
+              >
+                Claim Prize
+              </button>
             </div>
+          )}
+          {listOfCreators &&
+            chestVaultAccount &&
+            selectedCreator?.toString() == publicKey?.toString() && (
+              <button
+                onClick={handleClickWithdraw}
+                className="border-2 border-white p-2 bg-green-500 hover:bg-green-700"
+              >
+                Withdraw all funds in chest
+              </button>
+            )}
+        </div>
       )}
     </div>
   );

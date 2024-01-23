@@ -1,33 +1,39 @@
-import { FC } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { FC } from "react";
+import Link from "next/link";
+import Image from "next/image";
 export const Footer: FC = () => {
-    return (
-        <div className="flex">
-            <footer className="border-t-2 border-[#141414] bg-black hover:text-white w-screen" >
-                <div className="ml-12  mr-12">
-                    <div  className="items-center mx-auto max-w-screen-lg">
-                        <div className='flex flex-col col-span-2 mx-4 items-center'>
-                            <div className="m-1 sm:text-left place-items-start items-start font-normal tracking-tight text-secondary">
-                                Built on
-                            </div>
-                            <div className='flex flex-row ml-1'>
-                                <Link href="https://solana.com" target="_blank" rel="noopener noreferrer" passHref className="text-secondary hover:text-white">
-                                    <div className='flex flex-row ml-1'>
-                                        <Image
-                                            src="/solanaLogo.png"
-                                            alt="solana icon"
-                                            width={156}
-                                            height={96}
-                                            className='px-2'
-                                        />
-                                    </div>
-                                </Link>
-                            </div>
-                            <div className="mb-6 m-1 sm:text-left place-items-start items-start font-normal tracking-tight text-secondary">
-                                by Matt
-                            </div>
-                            {/* <div className="flex md:ml-2">
+  return (
+    <div className="flex">
+      <footer className="border-t-2 border-[#141414] bg-black hover:text-white w-screen">
+        <div className="ml-12  mr-12">
+          <div className="items-center mx-auto max-w-screen-lg">
+            <div className="flex flex-col col-span-2 mx-4 items-center">
+              <div className="m-1 sm:text-left place-items-start items-start font-normal tracking-tight text-secondary">
+                Built on
+              </div>
+              <div className="flex flex-row ml-1">
+                <Link
+                  href="https://solana.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  passHref
+                  className="text-secondary hover:text-white"
+                >
+                  <div className="flex flex-row ml-1">
+                    <Image
+                      src="/solanaLogo.png"
+                      alt="solana icon"
+                      width={156}
+                      height={96}
+                      className="px-2"
+                    />
+                  </div>
+                </Link>
+              </div>
+              <div className="mb-6 m-1 sm:text-left place-items-start items-start font-normal tracking-tight text-secondary">
+                by Matt
+              </div>
+              {/* <div className="flex md:ml-2">
                                 <a href="https://twitter.com/solana_devs" type="button" className="border-white text-secondary hover:text-white leading-normal hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out w-9 h-9 m-1">
                                     <svg aria-hidden="true"
                                         focusable="false"
@@ -64,9 +70,9 @@ export const Footer: FC = () => {
                             <div className="mb-6 m-1 sm:text-left place-items-start items-start font-normal tracking-tight text-secondary">
                                         © 2023 Solana Foundation
                             </div> */}
-                        </div>
+            </div>
 
-                        {/* <div className="mb-6 items-center mx-auto max-w-screen-lg">
+            {/* <div className="mb-6 items-center mx-auto max-w-screen-lg">
                             <div className="font-normal capitalize mb-2.5">SOLANA</div>
 
                             <div className="flex flex-col mb-0 gap-2">
@@ -131,9 +137,9 @@ export const Footer: FC = () => {
                                 </Link>
                             </div>
                         </div> */}
-                    </div>
-                </div>
-            </footer>
+          </div>
         </div>
-    );
+      </footer>
+    </div>
+  );
 };

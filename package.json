@@ -8,7 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prettier": "prettier --write \"**/*.{ts,tsx,md,rs}\""
   },
   "dependencies": {
     "@heroicons/react": "^1.0.5",
@@ -28,6 +29,7 @@
     "next": "^13.1.5",
     "next-compose-plugins": "^2.2.1",
     "next-transpile-modules": "^10.0.0",
+    "prettier": "^3.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^3.6.9"
