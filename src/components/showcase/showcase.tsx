@@ -72,25 +72,30 @@ export default function Showcase() {
           </h1>
         </HorizontalImageCard>
       </Link>
-      <VerticalImageCard>
-        <h1>Battleship</h1>
-        <Image
-          src="/battleship_display.png"
-          alt="Battleship"
-          height={300}
-          width={300}
-        />
-        <h1
-          style={{
-            color: "red",
-            transform: "rotate(-30deg)",
-            fontSize: "2.5rem",
-            border: "4px solid red",
-          }}
-        >
-          Coming Soon
-        </h1>
-      </VerticalImageCard>
+      <Link
+        href="/battleship"
+        style={{
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <VerticalImageCard>
+          <h1>Battleship</h1>
+          <Image
+            src="/battleship_display.png"
+            alt="Battleship"
+            height={300}
+            width={300}
+          />
+          <h1
+              style={{
+                color: "#00ff00",
+              }}
+            >
+              Live - Devnet
+            </h1>
+        </VerticalImageCard>
+      </Link>
     </BlackGridContainer>
   );
 }
