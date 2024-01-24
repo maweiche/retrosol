@@ -4,6 +4,7 @@ import React, { useDebugValue } from "react";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
+import Mancala_Rules from "components/rules/mancala_rules";
 import {
   program,
   connection,
@@ -15,6 +16,7 @@ import { notify } from "../../../utils/notifications";
 const Game = () => {
   const { publicKey, sendTransaction } = useWallet();
   const [loading, setLoading] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [gameDataAccount, setGameDataAccount] = useState<PublicKey>();
   const [gameState, setGameState] = useState([]);
 
@@ -50,7 +52,12 @@ const Game = () => {
         "GameDataAccount",
         game_account_info?.data,
       );
-
+      if(game_data_decoded?.allAuthorities.length == 0) {
+        notify({
+          message: `No games found`,
+          type: "error",
+        });
+      }
       setListOfCreators(
         game_data_decoded?.allAuthorities.map(
           (creator: { toString: () => any }) => {
@@ -107,7 +114,7 @@ const Game = () => {
   const renderCreatorSelection = () => {
     return (
       <div>
-        {listOfCreators.length > 0 && (
+        {listOfCreators?.length > 0 && (
           <div className="flex flex-col justify-center items-center space-y-2 border-2 border-white p-6">
             <p>Select a creator</p>
             <select
@@ -129,12 +136,6 @@ const Game = () => {
       </div>
     );
   };
-
-  // list of functions on program
-  // initializeGameData
-  // playerJoinsGame
-  // makeMove
-  // withdraw
 
   async function initializeGameData(entry_fee: string) {
     const entry_fee_as_bn = new anchor.BN(
@@ -259,17 +260,28 @@ const Game = () => {
     await getGameState();
   }
 
+  // async function clearGameList() {
+  //   const transaction = await program.methods
+  //     .clearGameList()
+  //     .accounts({
+  //       gameDataAccount: globalLevel1GameDataAccount as PublicKey,
+  //       signer: publicKey as PublicKey,
+  //     })
+  //     .transaction();
+
+  //   const txHash = await sendTransaction(transaction, connection);
+
+  //   const { blockhash, lastValidBlockHeight } =
+  //     await connection.getLatestBlockhash();
+
+  //   await connection.confirmTransaction({
+  //     blockhash,
+  //     lastValidBlockHeight,
+  //     signature: txHash,
+  //   });
+  // }
+
   const renderGameBoard = () => {
-    {
-      /* render the game board using tailwind,
-            use the game board pieces as a reference to render the game board
-            the top row of game board is 8-13 and the bottom row is 1-6
-            the top row is player 2 and the bottom row is player 1
-            0 should be the "score pit" for player 2 and 7 should be the "score pit" for player 1
-            the score pits should be larger than the other pits
-            the contents of the pits should be the number of pieces in the pit
-        */
-    }
     return (
       <div className="flex flex-col items-center">
         {chestVaultAccountFetched && (
@@ -551,20 +563,32 @@ const Game = () => {
   }, [selectedCreator]);
 
   return (
-    <div>
-      {/* {   
-                !loading && selectedCreator ?
-                renderGameBoard() :
-                null
-            } */}
+    <div
+      className="flex flex-col items-center"
+    >
+      {chestVaultAccountFetched && (
+        <button
+          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => setChestVaultAccountFetched(null)}
+        >
+          Main Menu
+        </button>
+      )}
+      <button
+        className="border-2 border-white m-4"
+        onClick={() => setShowRules(!showRules)}
+      >
+        {showRules ? "Hide Rules" : "Show Rules"}
+      </button>
+      {showRules && <Mancala_Rules />}
+      {/* <button
+        className="border-2 border-white m-4 align-center"
+        onClick={() => clearGameList()}
+      >
+        Clear Game List
+      </button> */}
       {chestVaultAccountFetched && renderGameBoard()}
       <div className="flex flex-col items-center">
-        <button
-          className="border-2 border-white m-4"
-          onClick={() => handleClickGetData()}
-        >
-          Check for Games
-        </button>
         {selectedCreator && (
           <button
             className="border-2 border-white m-4"
@@ -607,17 +631,23 @@ const Game = () => {
           </button>
         )}
       </div>
-      <div className="flex flex-col items-center">
-        {renderCreatorSelection()}
-        {!chestVaultAccountFetched && (
+      {!chestVaultAccountFetched && (
+        <div className="flex flex-col items-center">
+          {renderCreatorSelection()}
+          <button
+            className="border-2 border-white m-4"
+            onClick={() => handleClickGetData()}
+          >
+            Check for Games
+          </button>
           <button
             className="border-2 border-white m-4"
             onClick={() => initializeGameData(".25")}
           >
             Create Game
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
+import Hangman_Rules from "components/rules/hangman_rules";
 import {
   program,
   connection,
@@ -39,6 +40,7 @@ const Game = () => {
   const { publicKey, sendTransaction } = useWallet();
   const [checkingAnswer, setCheckingAnswer] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [listOfCreators, setListOfCreators] = useState<Array<PublicKey>>([]);
   const [selectedCreator, setSelectedCreator] = useState<
     PublicKey | null | string
@@ -997,7 +999,14 @@ const Game = () => {
   ]);
 
   return (
-    <div>
+    <div className="flex flex-col justify-center items-center space-y-2">
+      <button
+        onClick={() => setShowRules(!showRules)}
+        className="border-2 border-white p-2"
+      >
+        {showRules ? "Hide Rules" : "Show Rules"}
+      </button>
+      {showRules && <Hangman_Rules />}
       {!loading && (
         <div className="flex flex-col justify-center items-center space-y-2">
           <button

@@ -1,415 +1,421 @@
 export type Mancala = {
-  version: "0.1.0";
-  name: "mancala";
-  instructions: [
+  "version": "0.1.0",
+  "name": "mancala",
+  "instructions": [
     {
-      name: "initializeGameData";
-      accounts: [
+      "name": "initializeGameData",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
         {
-          name: "entryFee";
-          type: "u64";
-        },
-      ];
+          "name": "entryFee",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "playerJoinsGame";
-      accounts: [
+      "name": "playerJoinsGame",
+      "accounts": [
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
-      name: "makeMove";
-      accounts: [
+      "name": "makeMove",
+      "accounts": [
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
         {
-          name: "selectedPit";
-          type: "u8";
-        },
-      ];
+          "name": "selectedPit",
+          "type": "u8"
+        }
+      ]
     },
     {
-      name: "withdraw";
-      accounts: [
+      "name": "withdraw",
+      "accounts": [
         {
-          name: "gameDataAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount";
-          isMut: true;
-          isSigner: false;
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer";
-          isMut: true;
-          isSigner: true;
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        },
-      ];
-      args: [];
-    },
-  ];
-  accounts: [
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
     {
-      name: "GameDataAccount";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "GameDataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "allAuthorities";
-            type: {
-              vec: "publicKey";
-            };
-          },
-        ];
-      };
+            "name": "allAuthorities",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "ChestVaultAccount";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "ChestVaultAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authority";
-            type: "publicKey";
+            "name": "authority",
+            "type": "publicKey"
           },
           {
-            name: "chestReward";
-            type: "u64";
+            "name": "chestReward",
+            "type": "u64"
           },
           {
-            name: "password";
-            type: "string";
+            "name": "password",
+            "type": "string"
           },
           {
-            name: "entryFee";
-            type: "u64";
+            "name": "entryFee",
+            "type": "u64"
           },
           {
-            name: "scoreSheet";
-            type: {
-              defined: "GameRecord";
-            };
+            "name": "scoreSheet",
+            "type": {
+              "defined": "GameRecord"
+            }
           },
           {
-            name: "gameBoard";
-            type: {
-              array: ["u8", 14];
-            };
-          },
-        ];
-      };
-    },
-  ];
-  types: [
+            "name": "gameBoard",
+            "type": {
+              "array": [
+                "u8",
+                14
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
     {
-      name: "GameRecord";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "GameRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "playerOne";
-            type: "publicKey";
+            "name": "playerOne",
+            "type": "publicKey"
           },
           {
-            name: "playerOneScore";
-            type: "u8";
+            "name": "playerOneScore",
+            "type": "u8"
           },
           {
-            name: "playerTwo";
-            type: "publicKey";
+            "name": "playerTwo",
+            "type": "publicKey"
           },
           {
-            name: "playerTwoScore";
-            type: "u8";
+            "name": "playerTwoScore",
+            "type": "u8"
           },
           {
-            name: "totalMoves";
-            type: "u8";
+            "name": "totalMoves",
+            "type": "u8"
           },
           {
-            name: "currentMove";
-            type: "publicKey";
+            "name": "currentMove",
+            "type": "publicKey"
           },
           {
-            name: "gameOver";
-            type: "bool";
+            "name": "gameOver",
+            "type": "bool"
           },
           {
-            name: "winner";
-            type: "publicKey";
-          },
-        ];
-      };
-    },
-  ];
-  metadata: {
-    address: "27kjU1HDLsU1kYudhryKg95ji2earYkWunWdyYQhbJjM";
-  };
-};
+            "name": "winner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "27kjU1HDLsU1kYudhryKg95ji2earYkWunWdyYQhbJjM"
+  }
+}
 
 export const IDL: Mancala = {
-  version: "0.1.0",
-  name: "mancala",
-  instructions: [
+  "version": "0.1.0",
+  "name": "mancala",
+  "instructions": [
     {
-      name: "initializeGameData",
-      accounts: [
+      "name": "initializeGameData",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "entryFee",
-          type: "u64",
-        },
-      ],
+          "name": "entryFee",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "playerJoinsGame",
-      accounts: [
+      "name": "playerJoinsGame",
+      "accounts": [
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
+      "args": []
     },
     {
-      name: "makeMove",
-      accounts: [
+      "name": "makeMove",
+      "accounts": [
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "selectedPit",
-          type: "u8",
-        },
-      ],
+          "name": "selectedPit",
+          "type": "u8"
+        }
+      ]
     },
     {
-      name: "withdraw",
-      accounts: [
+      "name": "withdraw",
+      "accounts": [
         {
-          name: "gameDataAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "gameDataAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "chestVaultAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "chestVaultAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
-    },
+      "args": []
+    }
   ],
-  accounts: [
+  "accounts": [
     {
-      name: "GameDataAccount",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GameDataAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "allAuthorities",
-            type: {
-              vec: "publicKey",
-            },
-          },
-        ],
-      },
+            "name": "allAuthorities",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "ChestVaultAccount",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "ChestVaultAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authority",
-            type: "publicKey",
+            "name": "authority",
+            "type": "publicKey"
           },
           {
-            name: "chestReward",
-            type: "u64",
+            "name": "chestReward",
+            "type": "u64"
           },
           {
-            name: "password",
-            type: "string",
+            "name": "password",
+            "type": "string"
           },
           {
-            name: "entryFee",
-            type: "u64",
+            "name": "entryFee",
+            "type": "u64"
           },
           {
-            name: "scoreSheet",
-            type: {
-              defined: "GameRecord",
-            },
+            "name": "scoreSheet",
+            "type": {
+              "defined": "GameRecord"
+            }
           },
           {
-            name: "gameBoard",
-            type: {
-              array: ["u8", 14],
-            },
-          },
-        ],
-      },
-    },
+            "name": "gameBoard",
+            "type": {
+              "array": [
+                "u8",
+                14
+              ]
+            }
+          }
+        ]
+      }
+    }
   ],
-  types: [
+  "types": [
     {
-      name: "GameRecord",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GameRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "playerOne",
-            type: "publicKey",
+            "name": "playerOne",
+            "type": "publicKey"
           },
           {
-            name: "playerOneScore",
-            type: "u8",
+            "name": "playerOneScore",
+            "type": "u8"
           },
           {
-            name: "playerTwo",
-            type: "publicKey",
+            "name": "playerTwo",
+            "type": "publicKey"
           },
           {
-            name: "playerTwoScore",
-            type: "u8",
+            "name": "playerTwoScore",
+            "type": "u8"
           },
           {
-            name: "totalMoves",
-            type: "u8",
+            "name": "totalMoves",
+            "type": "u8"
           },
           {
-            name: "currentMove",
-            type: "publicKey",
+            "name": "currentMove",
+            "type": "publicKey"
           },
           {
-            name: "gameOver",
-            type: "bool",
+            "name": "gameOver",
+            "type": "bool"
           },
           {
-            name: "winner",
-            type: "publicKey",
-          },
-        ],
-      },
-    },
+            "name": "winner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
   ],
-  metadata: {
-    address: "27kjU1HDLsU1kYudhryKg95ji2earYkWunWdyYQhbJjM",
-  },
-};
+  "metadata": {
+    "address": "27kjU1HDLsU1kYudhryKg95ji2earYkWunWdyYQhbJjM"
+  }
+}

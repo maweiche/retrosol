@@ -11,8 +11,7 @@ import {
 } from "../utils/anchor";
 import * as anchor from "@project-serum/anchor";
 import { notify } from "../../../utils/notifications";
-import { set } from "date-fns";
-import { pl } from "date-fns/locale";
+import Battleship_Rules from "../../rules/battleship_rules";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 type GameDataAccount = {
@@ -33,6 +32,7 @@ const Game = () => {
   const default_publicKey = "11111111111111111111111111111111";
   // basic states
   const [loading, setLoading] = useState<boolean>(false);
+  const [showRules, setShowRules] = useState<boolean>(false);
   const [hookedGame, setHookedGame] = useState<boolean>(false);
   const [showCreateGame, setShowCreateGame] = useState<boolean>(false);
 
@@ -110,6 +110,12 @@ const Game = () => {
         "GameDataAccount",
         game_account_info?.data,
       );
+      if(game_data_decoded?.allCreators.length == 0){
+        notify({
+          message: "No games available!",
+          type: "error",
+        });
+      }
       setAllCreators(
         game_data_decoded?.allCreators.map(
           (creator: { toString: () => any }) => {
@@ -378,6 +384,19 @@ const Game = () => {
       lastValidBlockHeight,
       signature: txHash,
     });
+
+    setChestVaultAccountFetched(null);
+    setGameState(null);
+    setPlayerOne(null);
+    setPlayerTwo(null);
+    setPlayerTurn(null);
+    setGameOver(false);
+    setPlayerOneReady(false);
+    setPlayerTwoReady(false);
+    setPlacedShips(sample_board);
+    setPlacementTotal(0);
+    setPlacementValid(true);
+    setSelectedCreator(null);
   }
 
   // Game functions
@@ -687,7 +706,9 @@ const Game = () => {
             )),
           )}
         </div>
+        <p className="text-xs">Player 1 Ships</p>
         <div className="border-2 border-white h-6 w-full bg-orange-500"></div>
+        <p className="text-xs">Player 2 Ships</p>
         <div className="grid grid-cols-10 gap-0">
           {gameState?.slice(-5).map((row, i) =>
             row.map((square, j) => (
@@ -857,7 +878,38 @@ const Game = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      {publicKey &&
+      <button
+        className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+        onClick={() => {
+          setShowRules(!showRules);
+        }}
+      >
+        {showRules ? "Hide Rules" : "Show Rules"}
+      </button>
+      {showRules && <Battleship_Rules />}
+      {chestVaultAccountFetched && (
+        <button
+          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => {
+            setChestVaultAccountFetched(null);
+            setGameState(null);
+            setPlayerOne(null);
+            setPlayerTwo(null);
+            setPlayerTurn(null);
+            setGameOver(false);
+            setPlayerOneReady(false);
+            setPlayerTwoReady(false);
+            setPlacedShips(sample_board);
+            setPlacementTotal(0);
+            setPlacementValid(true);
+            setSelectedCreator(null);
+          }}
+        >
+          Main Menu
+        </button>
+      )}
+      {publicKey && 
+        !chestVaultAccountFetched &&
         !showCreateGame &&
         allCreators?.length > 0 &&
         renderCreatorSelection()}
